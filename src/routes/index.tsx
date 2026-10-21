@@ -3,7 +3,7 @@ import { CalendarDays, Home, Mail, MessageSquare, MessagesSquare } from "lucide-
 import { AppShell } from "@/components/AppShell";
 import { Annotate, SampleBanner } from "@/components/SampleBanner";
 import { ActivityChart, DripCard, KpiStrip, LocationCard, OtaCard, SegmentsCard, SplitSegmentsCard } from "@/components/outreach/Cards";
-import { CompactHealthCard, NoEmailPlan, PausedBanner, SendingHealthCard, TipsPanel } from "@/components/outreach/EmailStatus";
+import { CompactHealthCard, DailyLimitCard, EmailHealthCard, NoEmailPlan, PausedBanner, TipsPanel } from "@/components/outreach/EmailStatus";
 import { EMAIL_SCENARIOS, EMAIL_STATE_LABELS, RANGES, segments, segmentsSplit, series, sum, type Channel, type EmailState } from "@/lib/outreach-data";
 import { useState } from "react";
 
@@ -63,7 +63,7 @@ function Outreach() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/" });
   const scenario = EMAIL_SCENARIOS[search.state];
-  const channel: Channel = scenario.hasPlan ? search.channel : "text";
+  const channel: Channel = search.channel;
   const data = series(search.range);
   const [tipsOpen, setTipsOpen] = useState(false);
   const rangeLabel = RANGES.find((r) => r.value === search.range)?.label ?? "Last 15 days";
@@ -92,11 +92,7 @@ function Outreach() {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        {scenario.hasPlan ? (
-          <ChannelSwitch channel={channel} onSelect={(c) => setSearch({ channel: c })} />
-        ) : (
-          <Annotate>Text-only hotel: the channel switch is hidden entirely (decision 3).</Annotate>
-        )}
+        <ChannelSwitch channel={channel} onSelect={(c) => setSearch({ channel: c })} />
         <label className="flex items-center gap-2 rounded-md border border-primary/40 bg-card px-3 py-2 shadow-sm transition-colors hover:border-primary/70">
           <CalendarDays className="size-4 text-muted-foreground" aria-hidden />
           <span className="sr-only">Date range</span>
@@ -105,9 +101,7 @@ function Outreach() {
           </select>
         </label>
       </div>
-      {scenario.hasPlan && (
-        <div className="mt-2"><Annotate>Segmented control, not tabs, to avoid three levels of navigation. Options are shown per plan; the choice is kept in the URL (?channel=).</Annotate></div>
-      )}
+      <div className="mt-2"><Annotate>Segmented control, not tabs, to avoid three levels of navigation. The choice is kept in the URL (?channel=). Without an Email plan, the Email and Text + Email views show an empty state with a contact CTA.</Annotate></div>
 
       <div className="mt-5">
         {channel === "text" && <TextView data={data} range={search.range} />}
@@ -146,8 +140,9 @@ function EmailView({ data, range, rangeLabel, search, onOpenTips }: V & { rangeL
   return (
     <div className="space-y-5">
       {search.state === "paused" && <PausedBanner />}
-      <SendingHealthCard state={search.state} scenario={scenario} onOpenTips={onOpenTips} />
-      <Annotate>The health card is live (today) and ignores the date picker on purpose. Everything below follows the date range.</Annotate>
+      <EmailHealthCard state={search.state} scenario={scenario} onOpenTips={onOpenTips} />
+      <DailyLimitCard state={search.state} scenario={scenario} onOpenTips={onOpenTips} />
+      <Annotate>The health and limit cards are live (today) and ignore the date picker on purpose. Everything below follows the date range.</Annotate>
       <div className="border-t pt-4">
         <h2 className="text-sm font-medium text-muted-foreground">Email activity · {rangeLabel}</h2>
       </div>
