@@ -40,20 +40,21 @@ export function SplitSegmentsCard({ title, data }: { title: string; data: SplitS
       </div>
       <p className="mt-3 text-4xl font-medium tracking-tight tabular-nums">{total.toLocaleString()}</p>
       <p className="text-sm text-muted-foreground">guests reached in total</p>
-      <ul className="mt-5 space-y-2">
+      <ul className="mt-5 space-y-3.5">
         {data.map((s) => {
           const sum = s.text + s.email;
-          const w = Math.max(32, (sum / max) * 100);
+          const w = Math.max(6, (sum / max) * 100);
           const textW = (s.text / sum) * 100;
           return (
-            <li key={s.name} className="flex items-center gap-4">
-              <div className="flex-1">
-                <div className="flex overflow-hidden rounded-full text-primary-foreground" style={{ width: `${w}%` }} title={`${s.name}: ${s.text} text · ${s.email} email`}>
-                  <span className="truncate bg-chart-1 py-1.5 pl-3" style={{ width: `${textW}%` }}>{s.name}</span>
-                  <span className="flex-1 bg-series-email" />
-                </div>
+            <li key={s.name}>
+              <div className="mb-1.5 flex items-baseline justify-between gap-4">
+                <span className="truncate text-sm">{s.name}</span>
+                <span className="text-xs tabular-nums text-muted-foreground">{s.text.toLocaleString()} · {s.email.toLocaleString()}</span>
               </div>
-              <span className="w-24 text-right text-xs tabular-nums text-muted-foreground">{s.text.toLocaleString()} · {s.email.toLocaleString()}</span>
+              <div className="flex h-3.5 overflow-hidden rounded-full shadow-sm" style={{ width: `${w}%` }} title={`${s.name}: ${s.text} text · ${s.email} email`} role="img" aria-label={`${s.name}: ${s.text} text, ${s.email} email`}>
+                <span className="bg-chart-1" style={{ width: `${textW}%` }} />
+                <span className="flex-1 bg-series-email" />
+              </div>
             </li>
           );
         })}
