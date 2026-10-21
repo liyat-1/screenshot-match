@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import type { DayPoint, Segment } from "@/lib/outreach-data";
+import type { DayPoint, Segment, SplitSegment } from "@/lib/outreach-data";
 
 const SEG_COLORS = ["bg-chart-1", "bg-chart-2", "bg-chart-3", "bg-chart-4", "bg-chart-5", "bg-chart-6"];
 
@@ -26,6 +26,42 @@ export function SegmentsCard({ title, data, unit = "guests reached in total" }: 
   );
 }
 
+export function SplitSegmentsCard({ title, data }: { title: string; data: SplitSegment[] }) {
+  const total = data.reduce((a, s) => a + s.text + s.email, 0);
+  const max = Math.max(...data.map((s) => s.text + s.email));
+  return (
+    <section className="card-surface p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-base font-medium">{title}</h2>
+        <div className="flex gap-3 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-chart-1" aria-hidden /> Text</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-series-email" aria-hidden /> Email</span>
+        </div>
+      </div>
+      <p className="mt-4 text-4xl font-medium">{total.toLocaleString()}</p>
+      <p className="text-muted-foreground">guests reached in total</p>
+      <ul className="mt-5 space-y-2">
+        {data.map((s) => {
+          const sum = s.text + s.email;
+          const w = Math.max(32, (sum / max) * 100);
+          const textW = (s.text / sum) * 100;
+          return (
+            <li key={s.name} className="flex items-center gap-4">
+              <div className="flex-1">
+                <div className="flex overflow-hidden rounded-full text-primary-foreground" style={{ width: `${w}%` }} title={`${s.name}: ${s.text} text · ${s.email} email`}>
+                  <span className="truncate bg-chart-1 py-1.5 pl-3" style={{ width: `${textW}%` }}>{s.name}</span>
+                  <span className="flex-1 bg-series-email" />
+                </div>
+              </div>
+              <span className="w-24 text-right text-xs tabular-nums text-muted-foreground">{s.text.toLocaleString()} · {s.email.toLocaleString()}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
 export function LocationCard({ title }: { title: string }) {
   return (
     <section className="card-surface relative flex min-h-[320px] flex-col p-6">
@@ -37,6 +73,44 @@ export function LocationCard({ title }: { title: string }) {
           <p className="text-danger">this feature is under development</p>
         </div>
       </div>
+    </section>
+  );
+}
+
+export function OtaCard() {
+  return (
+    <section className="card-surface flex flex-col p-6">
+      <h2 className="text-base font-medium">OTA guests reached</h2>
+      <div className="mt-4 flex gap-2">
+        <span className="rounded-sm bg-info-soft px-2.5 py-1 text-xs font-semibold text-info">Expedia</span>
+        <span className="rounded-sm bg-info-soft px-2.5 py-1 text-xs font-semibold text-info">Booking.com</span>
+      </div>
+      <p className="mt-4 text-4xl font-medium">7</p>
+      <p className="text-muted-foreground">OTA guests reached</p>
+      <a href="#" onClick={(e) => e.preventDefault()} className="mt-auto pt-4 text-sm text-primary hover:underline">See more on OTA outreach →</a>
+    </section>
+  );
+}
+
+export function DripCard({ value, label = "guests reached in total" }: { value: number; label?: string }) {
+  return (
+    <section className="card-surface p-6">
+      <h2 className="text-base font-medium">Drip campaign results</h2>
+      <p className="mt-4 text-4xl font-medium">{value.toLocaleString()}</p>
+      <p className="text-muted-foreground">{label}</p>
+    </section>
+  );
+}
+
+export function KpiStrip({ cells }: { cells: { label: string; value: number }[] }) {
+  return (
+    <section className="card-surface grid divide-y p-6 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      {cells.map((c) => (
+        <div key={c.label} className="py-3 sm:px-6 sm:py-0 sm:first:pl-0 sm:last:pr-0">
+          <p className="text-4xl font-medium tabular-nums">{c.value.toLocaleString()}</p>
+          <p className="mt-1 text-muted-foreground">{c.label}</p>
+        </div>
+      ))}
     </section>
   );
 }
