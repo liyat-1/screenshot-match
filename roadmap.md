@@ -1,2 +1,2 @@
-- [ ] Restore header info icons on email health and daily limit cards.
-- [ ] Add the missing Too few sends sample state and verify its display.
+- [x] Restore header info icons on email health and daily limit cards.
+- [x] Add the missing Too few sends sample state and verify its display.
