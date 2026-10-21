@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { CheckCircle2, AlertTriangle, PauseCircle, Hourglass, HelpCircle, Info, Ban } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { clientLabel, remainingToday, type EmailScenario } from "@/lib/outreach-data";
+import { clientLabel, remainingToday, type Channel, type EmailState, type EmailScenario } from "@/lib/outreach-data";
 
 const TONES = {
   success: "bg-success-soft text-success",
@@ -14,7 +14,7 @@ function reputationCopy(s: EmailScenario) {
   if (!s.raw) return { tone: "info" as const, icon: HelpCircle, label: "Unavailable", heading: "Email reputation is unavailable", body: "We can't display your current email delivery status right now." };
   if (s.raw === "Paused") return { tone: "danger" as const, icon: PauseCircle, label: "Paused", heading: "Email sending is temporarily paused", body: "Email delivery needs to recover before sending can resume. This happens automatically once delivery is healthy again." };
   if (s.tooFewSends) return { tone: "info" as const, icon: Hourglass, label: "Assessing", heading: "We're still assessing email delivery", body: "There hasn't been enough email activity to assess delivery health yet. Your current sending limit still applies." };
-  if (s.raw === "SteppedDown") return { tone: "warning" as const, icon: AlertTriangle, label: clientLabel(s.raw)!, heading: "Your sending limit has been reduced", body: "Some delivery signals need attention. Your current limit has been reduced to help protect email delivery." };
+  if (s.raw === "SteppedDown") return { tone: "warning" as const, icon: AlertTriangle, label: clientLabel(s.raw), heading: "Your sending limit has been reduced", body: "Some delivery signals need attention. Your current limit has been reduced to help protect email delivery." };
   return { tone: "success" as const, icon: CheckCircle2, label: "Healthy", heading: "Your email delivery is healthy", body: "Your sending limit can increase as delivery remains healthy." };
 }
 
@@ -79,7 +79,7 @@ export function DailyLimitCard({ scenario, showRemaining }: { scenario: EmailSce
                 <div className={`h-full ${remaining === 0 ? "bg-warning" : "bg-primary"}`} style={{ width: `${pct}%` }} />
               </div>
               <div className="mt-2 flex justify-between text-xs text-muted-foreground">
-                <span>{sentToday!.toLocaleString()} sent today</span>
+                <span>{sentToday?.toLocaleString()} sent today</span>
                 <span>{remaining.toLocaleString()} remaining today</span>
               </div>
               {remaining === 0 && <p className="mt-2 font-medium text-warning">You've reached today's email sending limit.</p>}
@@ -101,7 +101,7 @@ export function NoEmailPlan() {
   );
 }
 
-export function EmailSummaryCompact({ scenario, search }: { scenario: EmailScenario; search: Record<string, unknown> }) {
+export function EmailSummaryCompact({ scenario, search }: { scenario: EmailScenario; search: { channel: Channel; range: number; state: EmailState; remaining: boolean } }) {
   const c = reputationCopy(scenario);
   const paused = scenario.raw === "Paused";
   return (
@@ -120,7 +120,7 @@ export function EmailSummaryCompact({ scenario, search }: { scenario: EmailScena
           <dd className="mt-1 font-medium">{paused ? "Paused" : scenario.dailyLimit != null ? `${scenario.dailyLimit.toLocaleString()} emails/day` : "—"}</dd>
         </div>
       </dl>
-      <Link to="/" search={{ ...search, channel: "email" } as never} className="mt-4 inline-block text-primary hover:underline">View Email insights →</Link>
+      <Link to="/" search={{ ...search, channel: "email" }} className="mt-4 inline-block text-primary hover:underline">View Email insights →</Link>
     </section>
   );
 }
