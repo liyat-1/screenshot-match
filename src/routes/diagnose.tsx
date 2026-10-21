@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Info, AlertTriangle } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { SampleBanner } from "@/components/SampleBanner";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type DState = "investigation" | "no_plan" | "no_row" | "zero_eligible" | "missing_fields";
 const LABELS: Record<DState, string> = {
@@ -38,6 +38,8 @@ export const Route = createFileRoute("/diagnose")({
       { name: "description", content: "Internal CSM view of email eligibility, warmup status, limits and reputation signals." },
       { property: "og:title", content: "Diagnose — Email reputation & sending | Directful Internal" },
       { property: "og:description", content: "Internal CSM view of email eligibility, warmup status, limits and reputation signals." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Diagnose,
@@ -81,7 +83,6 @@ function Diagnose() {
   const s = SCEN[state];
   const w = s.warmup;
   return (
-    <TooltipProvider delayDuration={100}>
     <AppShell crumb="Diagnose · Hellas Gadgets Kallithea" active="diagnose">
       <SampleBanner>
         <label className="flex items-center gap-2 text-sm">Scenario
@@ -103,7 +104,7 @@ function Diagnose() {
           {!s.plan ? (
             <><p className="mt-1 text-2xl font-medium text-muted-foreground">Not applicable</p><p className="text-xs text-muted-foreground">No Email plan 140</p></>
           ) : (
-            <><p className="mt-1 text-2xl font-medium tabular-nums">{s.emailEligible!.toLocaleString()}</p>
+            <><p className="mt-1 text-2xl font-medium tabular-nums">{s.emailEligible?.toLocaleString() ?? "—"}</p>
               <p className="text-xs text-muted-foreground">{s.emailEligible === 0 ? "No guests currently meet the Email eligibility rules" : "guests · current"}</p></>
           )}
         </div>
@@ -147,6 +148,5 @@ function Diagnose() {
         </div>
       )}
     </AppShell>
-    </TooltipProvider>
   );
 }

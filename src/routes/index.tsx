@@ -21,6 +21,8 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Outreach analytics by channel with email reputation and daily sending limit." },
       { property: "og:title", content: "Outreach analytics — Text & Email | Directful" },
       { property: "og:description", content: "Outreach analytics by channel with email reputation and daily sending limit." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Outreach,
