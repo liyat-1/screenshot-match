@@ -52,7 +52,7 @@ export function AppShell({ crumb, active, children }: { crumb: string; active: "
             {ANALYTICS_SUB.map((s) => (
               <li key={s}>
                 {s === "Outreach" ? (
-                  <Link to="/" search={{ channel: "text", range: 15, state: "healthy", remaining: false }} className={`block py-1.5 pl-4 ${active === "outreach" ? "text-primary" : "text-foreground hover:text-primary"}`}>{s}</Link>
+                  <Link to="/" search={{ channel: "both", range: 15, state: "healthy", remaining: false }} className={`block py-1.5 pl-4 ${active === "outreach" ? "text-primary" : "text-foreground hover:text-primary"}`}>{s}</Link>
                 ) : (
                   <span className="block cursor-default py-1.5 pl-4 text-foreground/80">{s}</span>
                 )}
@@ -86,7 +86,7 @@ export function AppShell({ crumb, active, children }: { crumb: string; active: "
           <Info className="ml-auto size-5 text-primary" aria-label="Page information" />
         </header>
         <nav className="flex gap-4 border-b bg-shell px-6 py-3 lg:hidden" aria-label="Prototype pages">
-          <Link to="/" search={{ channel: "text", range: 15, state: "healthy", remaining: false }} aria-current={active === "outreach" ? "page" : undefined} className={active === "outreach" ? "font-medium text-primary" : "text-muted-foreground"}>Outreach</Link>
+          <Link to="/" search={{ channel: "both", range: 15, state: "healthy", remaining: false }} aria-current={active === "outreach" ? "page" : undefined} className={active === "outreach" ? "font-medium text-primary" : "text-muted-foreground"}>Outreach</Link>
           <Link to="/diagnose" search={{ state: "investigation" }} aria-current={active === "diagnose" ? "page" : undefined} className={active === "diagnose" ? "font-medium text-primary" : "text-muted-foreground"}>Diagnose</Link>
         </nav>
         <main className="flex-1 px-6 py-6">{children}</main>

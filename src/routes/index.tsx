@@ -1,16 +1,17 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { CalendarDays, Home } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { CalendarDays, Home, Mail, MessageSquare, MessagesSquare } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { SampleBanner } from "@/components/SampleBanner";
-import { ActivityChart, LocationCard, SegmentsCard, StatCard } from "@/components/outreach/Cards";
-import { DailyLimitCard, EmailSummaryCompact, NoEmailPlan, ReputationCard } from "@/components/outreach/EmailStatus";
-import { EMAIL_SCENARIOS, EMAIL_STATE_LABELS, RANGES, segments, series, sum, type Channel, type EmailState } from "@/lib/outreach-data";
+import { Annotate, SampleBanner } from "@/components/SampleBanner";
+import { ActivityChart, DripCard, KpiStrip, LocationCard, OtaCard, SegmentsCard, SplitSegmentsCard } from "@/components/outreach/Cards";
+import { CompactHealthCard, NoEmailPlan, PausedBanner, SendingHealthCard, TipsPanel } from "@/components/outreach/EmailStatus";
+import { EMAIL_SCENARIOS, EMAIL_STATE_LABELS, RANGES, segments, segmentsSplit, series, sum, type Channel, type EmailState } from "@/lib/outreach-data";
+import { useState } from "react";
 
 type Search = { channel: Channel; range: number; state: EmailState; remaining: boolean };
 
 export const Route = createFileRoute("/")({
   validateSearch: (s: Partial<Record<keyof Search, unknown>>): Search => ({
-    channel: (["text", "email", "both"].includes(s.channel as string) ? s.channel : "text") as Channel,
+    channel: (["text", "email", "both"].includes(s.channel as string) ? s.channel : "both") as Channel,
     range: [7, 15, 30].includes(Number(s.range)) ? Number(s.range) : 15,
     state: (typeof s.state === "string" && Object.hasOwn(EMAIL_SCENARIOS, s.state) ? s.state : "healthy") as EmailState,
     remaining: s.remaining === true || s.remaining === "true",
@@ -28,38 +29,55 @@ export const Route = createFileRoute("/")({
   component: Outreach,
 });
 
-const TABS: { id: Channel; label: string }[] = [
-  { id: "text", label: "Text" },
-  { id: "email", label: "Email" },
-  { id: "both", label: "Text + Email" },
+const TABS: { id: Channel; label: string; icon: typeof Mail }[] = [
+  { id: "text", label: "Text", icon: MessageSquare },
+  { id: "email", label: "Email", icon: Mail },
+  { id: "both", label: "Text + Email", icon: MessagesSquare },
 ];
+
+function ChannelSwitch({ channel, onSelect }: { channel: Channel; onSelect: (c: Channel) => void }) {
+  const onKey = (e: React.KeyboardEvent) => {
+    const i = TABS.findIndex((t) => t.id === channel);
+    if (e.key === "ArrowRight") onSelect(TABS[(i + 1) % TABS.length].id);
+    if (e.key === "ArrowLeft") onSelect(TABS[(i - 1 + TABS.length) % TABS.length].id);
+  };
+  return (
+    <div role="tablist" aria-label="Outreach channel" onKeyDown={onKey}
+      className="inline-flex h-9 items-center rounded-sm bg-muted p-0.5">
+      {TABS.map((t) => {
+        const selected = channel === t.id;
+        return (
+          <button key={t.id} role="tab" aria-selected={selected} onClick={() => onSelect(t.id)}
+            className={`flex h-8 min-w-24 items-center justify-center gap-1.5 rounded-sm px-3 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-ring ${
+              selected ? "bg-card font-medium text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
+            }`}>
+            <t.icon className="size-4" aria-hidden /> {t.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function Outreach() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/" });
   const scenario = EMAIL_SCENARIOS[search.state];
-  const tabs = scenario.hasPlan ? TABS : TABS.filter((t) => t.id === "text");
-  const channel: Channel = scenario.hasPlan ? search.channel : search.channel === "text" ? "text" : "email";
+  const channel: Channel = scenario.hasPlan ? search.channel : "text";
   const data = series(search.range);
+  const [tipsOpen, setTipsOpen] = useState(false);
+  const rangeLabel = RANGES.find((r) => r.value === search.range)?.label ?? "Last 15 days";
+
+  const setSearch = (patch: Partial<Search>) => navigate({ search: (p) => ({ ...p, ...patch }) });
 
   return (
     <AppShell crumb="Outreach" active="outreach">
       <SampleBanner>
         <label className="flex items-center gap-2 text-sm">Email state
           <select className="rounded-sm border border-sample bg-card px-2 py-1 text-foreground" value={search.state}
-            onChange={(e) => {
-              const state = e.currentTarget.value as EmailState;
-              navigate({ search: (p) => ({ ...p, state }) });
-            }}>
+            onChange={(e) => setSearch({ state: e.currentTarget.value as EmailState })}>
             {Object.entries(EMAIL_STATE_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select>
-        </label>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={search.remaining} onChange={(e) => {
-            const remaining = e.currentTarget.checked;
-            navigate({ search: (p) => ({ ...p, remaining }) });
-          }} />
-          Remaining-today variant
         </label>
       </SampleBanner>
 
@@ -71,32 +89,35 @@ function Outreach() {
               className={`px-4 pb-3 text-base ${t === "Outreach" ? "-mb-px border-b-2 border-primary font-medium text-foreground" : "text-muted-foreground"}`}>{t}</span>
           ))}
         </nav>
-        <label className="mb-2 flex items-center gap-2 rounded-sm border border-primary/40 bg-card px-3 py-2">
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        {scenario.hasPlan ? (
+          <ChannelSwitch channel={channel} onSelect={(c) => setSearch({ channel: c })} />
+        ) : (
+          <Annotate>Text-only hotel: the channel switch is hidden entirely (decision 3).</Annotate>
+        )}
+        <label className="flex items-center gap-2 rounded-sm border border-primary/40 bg-card px-3 py-2">
           <CalendarDays className="size-4 text-muted-foreground" aria-hidden />
           <span className="sr-only">Date range</span>
-          <select className="bg-transparent outline-none" value={search.range} onChange={(e) => {
-            const range = Number(e.currentTarget.value);
-            navigate({ search: (p) => ({ ...p, range }) });
-          }}>
+          <select className="bg-transparent outline-none" value={search.range} onChange={(e) => setSearch({ range: Number(e.currentTarget.value) })}>
             {RANGES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
           </select>
         </label>
       </div>
-
-      <nav className="mt-4 inline-flex rounded-sm border bg-card p-0.5" aria-label="Outreach channel">
-        {tabs.map((t) => (
-          <Link key={t.id} to="/" search={{ ...search, channel: t.id }} aria-current={channel === t.id ? "page" : undefined}
-            className={`rounded-sm px-4 py-1.5 transition-colors ${channel === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"}`}>
-            {t.label}
-          </Link>
-        ))}
-      </nav>
+      {scenario.hasPlan && (
+        <div className="mt-2"><Annotate>Segmented control, not tabs, to avoid three levels of navigation. Options are shown per plan; the choice is kept in the URL (?channel=).</Annotate></div>
+      )}
 
       <div className="mt-5">
         {channel === "text" && <TextView data={data} range={search.range} />}
-        {channel === "email" && (scenario.hasPlan ? <EmailView data={data} range={search.range} search={search} /> : <NoEmailPlan />)}
+        {channel === "email" && (scenario.hasPlan ? (
+          <EmailView data={data} range={search.range} rangeLabel={rangeLabel} search={search} onOpenTips={() => setTipsOpen(true)} />
+        ) : <NoEmailPlan />)}
         {channel === "both" && <BothView data={data} range={search.range} search={search} />}
       </div>
+
+      <TipsPanel open={tipsOpen} onClose={() => setTipsOpen(false)} />
     </AppShell>
   );
 }
@@ -105,37 +126,41 @@ type V = { data: ReturnType<typeof series>; range: number };
 
 function TextView({ data, range }: V) {
   return (
-    <div className="grid gap-5 xl:grid-cols-[1.4fr_1fr]">
-      <LocationCard title="Reached guests by location · Text" />
-      <SegmentsCard title="Outreach by segments · Text" data={segments("text", range)} />
+    <div className="grid gap-5 xl:grid-cols-3">
       <div className="xl:col-span-2">
         <ActivityChart title="Text messages & clicks" data={data} defs={[
           { key: "textMessages", label: "messages", color: "var(--series-text)", axis: "left" },
           { key: "textClicks", label: "clicks", color: "var(--series-clicks)", dashed: true, axis: "right" },
         ]} />
       </div>
+      <SegmentsCard title="Outreach by segments" data={segments("text", range)} />
+      <OtaCard />
+      <DripCard value={21} />
+      <LocationCard title="Reached guests by location" />
     </div>
   );
 }
 
-function EmailView({ data, range, search }: V & { search: Search }) {
+function EmailView({ data, range, rangeLabel, search, onOpenTips }: V & { rangeLabel: string; search: Search; onOpenTips: () => void }) {
   const scenario = EMAIL_SCENARIOS[search.state];
   return (
     <div className="space-y-5">
-      <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-        <ReputationCard scenario={scenario} />
-        <DailyLimitCard scenario={scenario} showRemaining={search.remaining || search.state === "cap_reached"} />
+      {search.state === "paused" && <PausedBanner />}
+      <SendingHealthCard state={search.state} scenario={scenario} onOpenTips={onOpenTips} />
+      <Annotate>The health card is live (today) and ignores the date picker on purpose. Everything below follows the date range.</Annotate>
+      <div className="border-t pt-4">
+        <h2 className="text-sm font-medium text-muted-foreground">Email activity · {rangeLabel}</h2>
       </div>
-      <p className="text-xs text-muted-foreground">Reputation and daily limit reflect today (hotel-local time). Analytics below follow the selected date range.</p>
-      <div className="grid gap-5 xl:grid-cols-[1.4fr_1fr]">
-        <LocationCard title="Reached guests by location · Email" />
-        <SegmentsCard title="Outreach by segments · Email" data={segments("email", range)} />
+      <div className="grid gap-5 xl:grid-cols-3">
         <div className="xl:col-span-2">
-          <ActivityChart title="Email messages & clicks" data={data} defs={[
+          <ActivityChart title="Marketing emails & clicks" data={data} defs={[
             { key: "emailMessages", label: "emails sent", color: "var(--series-email)", axis: "left" },
             { key: "emailClicks", label: "clicks", color: "var(--series-clicks)", dashed: true, axis: "right" },
           ]} />
         </div>
+        <SegmentsCard title="Outreach by segments · Email" data={segments("email", range)} unit="email recipients in total" />
+        <DripCard value={1184} label="guests reached by email drip" />
+        <div className="xl:col-span-2"><LocationCard title="Reached guests by location" /></div>
       </div>
     </div>
   );
@@ -143,41 +168,34 @@ function EmailView({ data, range, search }: V & { search: Search }) {
 
 function BothView({ data, range, search }: V & { search: Search }) {
   const scenario = EMAIL_SCENARIOS[search.state];
-  const t = segments("text", range).reduce((a, s) => a + s.count, 0);
-  const e = segments("email", range).reduce((a, s) => a + s.count, 0);
+  const textSent = sum(data, "textMessages");
+  const emailSent = sum(data, "emailMessages");
+  const reached = segments("text", range).reduce((a, s) => a + s.count, 0) + segments("email", range).reduce((a, s) => a + s.count, 0);
   return (
     <div className="space-y-5">
-      <div className="grid gap-5 lg:grid-cols-3">
-        <section className="card-surface p-5">
-          <h2 className="text-base font-medium">Text</h2>
-          <div className="mt-4 grid grid-cols-3 gap-3">
-            <StatCard label="Guests reached" value={t} sub="via Text" />
-            <StatCard label="Messages" value={sum(data, "textMessages")} sub="sent" />
-            <StatCard label="Clicks" value={sum(data, "textClicks")} sub="on links" />
-          </div>
-        </section>
-        <section className="card-surface p-5">
-          <h2 className="text-base font-medium">Email</h2>
-          <div className="mt-4 grid grid-cols-3 gap-3">
-            <StatCard label="Guests reached" value={e} sub="via Email" />
-            <StatCard label="Emails" value={sum(data, "emailMessages")} sub="sent" />
-            <StatCard label="Clicks" value={sum(data, "emailClicks")} sub="on links" />
-          </div>
-        </section>
-        <EmailSummaryCompact scenario={scenario} search={search} />
+      {search.state === "paused" && <PausedBanner />}
+      <KpiStrip cells={[
+        { label: "Text messages sent", value: textSent },
+        { label: "Emails sent", value: emailSent },
+        { label: "Guests reached (all channels)", value: reached },
+      ]} />
+      <Annotate>Unique guests across channels need engineering confirmation; if not possible, show "Messages sent (total)" instead.</Annotate>
+      <div className="grid gap-5 xl:grid-cols-3">
+        <div className="xl:col-span-2">
+          <ActivityChart title="Messages & clicks by channel" data={data} defs={[
+            { key: "textMessages", label: "Text", color: "var(--series-text)", axis: "left" },
+            { key: "emailMessages", label: "Email", color: "var(--series-email)", axis: "left" },
+            { key: "textClicks", label: "Text clicks", color: "var(--series-text)", dashed: true, axis: "right" },
+            { key: "emailClicks", label: "Email clicks", color: "var(--series-email)", dashed: true, axis: "right" },
+          ]} />
+        </div>
+        <CompactHealthCard state={search.state} scenario={scenario} search={search} />
       </div>
-      <p className="text-xs text-muted-foreground">Reach is shown per channel. A guest contacted on both channels appears in each, so the two aren't added together.</p>
-      <div className="grid gap-5 xl:grid-cols-2">
-        <ActivityChart title="Messages by channel" note="Text messages and emails sent" data={data} defs={[
-          { key: "textMessages", label: "Text", color: "var(--series-text)", axis: "left" },
-          { key: "emailMessages", label: "Email", color: "var(--series-email)", dashed: true, axis: "right" },
-        ]} />
-        <ActivityChart title="Clicks by channel" note="Link clicks per channel" data={data} defs={[
-          { key: "textClicks", label: "Text", color: "var(--series-text)", axis: "left" },
-          { key: "emailClicks", label: "Email", color: "var(--series-email)", dashed: true, axis: "right" },
-        ]} />
-        <SegmentsCard title="Outreach by segments · Text" data={segments("text", range)} />
-        <SegmentsCard title="Outreach by segments · Email" data={segments("email", range)} />
+      <SplitSegmentsCard title="Outreach by segments" data={segmentsSplit(range)} />
+      <Annotate>No blended reputation. Email health is shown only for email.</Annotate>
+      <div className="grid gap-5 xl:grid-cols-3">
+        <DripCard value={1205} />
+        <div className="xl:col-span-2"><LocationCard title="Reached guests by location" /></div>
       </div>
     </div>
   );
