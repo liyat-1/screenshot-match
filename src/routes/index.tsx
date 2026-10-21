@@ -38,8 +38,8 @@ const TABS: { id: Channel; label: string; icon: typeof Mail }[] = [
 function ChannelSwitch({ channel, onSelect }: { channel: Channel; onSelect: (c: Channel) => void }) {
   const onKey = (e: React.KeyboardEvent) => {
     const i = TABS.findIndex((t) => t.id === channel);
-    if (e.key === "ArrowRight") onSelect(TABS[(i + 1) % TABS.length].id);
-    if (e.key === "ArrowLeft") onSelect(TABS[(i - 1 + TABS.length) % TABS.length].id);
+    const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+    if (step !== 0) onSelect(TABS[(i + step + TABS.length) % TABS.length]?.id ?? channel);
   };
   return (
     <div role="tablist" aria-label="Outreach channel" onKeyDown={onKey}
