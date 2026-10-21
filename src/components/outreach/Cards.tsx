@@ -10,15 +10,15 @@ export function SegmentsCard({ title, data, unit = "guests reached in total" }: 
   return (
     <section className="card-surface p-6">
       <h2 className="text-base font-medium">{title}</h2>
-      <p className="mt-4 text-4xl font-medium">{total.toLocaleString()}</p>
-      <p className="text-muted-foreground">{unit}</p>
+      <p className="mt-3 text-4xl font-medium tracking-tight tabular-nums">{total.toLocaleString()}</p>
+      <p className="text-sm text-muted-foreground">{unit}</p>
       <ul className="mt-5 space-y-2">
         {data.map((s, i) => (
           <li key={s.name} className="flex items-center gap-4">
             <div className="flex-1">
-              <div className={`truncate rounded-full px-3 py-1.5 text-primary-foreground ${SEG_COLORS[i % 6]}`} style={{ width: `${Math.max(32, (s.count / max) * 100)}%` }} title={s.name}>{s.name}</div>
+              <div className={`truncate rounded-full px-3 py-1.5 text-primary-foreground shadow-sm ${SEG_COLORS[i % 6]}`} style={{ width: `${Math.max(32, (s.count / max) * 100)}%` }} title={s.name}>{s.name}</div>
             </div>
-            <span className="w-12 text-right tabular-nums">{s.count.toLocaleString()}</span>
+            <span className="w-12 text-right text-sm tabular-nums">{s.count.toLocaleString()}</span>
           </li>
         ))}
       </ul>
@@ -38,8 +38,8 @@ export function SplitSegmentsCard({ title, data }: { title: string; data: SplitS
           <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-series-email" aria-hidden /> Email</span>
         </div>
       </div>
-      <p className="mt-4 text-4xl font-medium">{total.toLocaleString()}</p>
-      <p className="text-muted-foreground">guests reached in total</p>
+      <p className="mt-3 text-4xl font-medium tracking-tight tabular-nums">{total.toLocaleString()}</p>
+      <p className="text-sm text-muted-foreground">guests reached in total</p>
       <ul className="mt-5 space-y-2">
         {data.map((s) => {
           const sum = s.text + s.email;
@@ -68,9 +68,9 @@ export function LocationCard({ title }: { title: string }) {
       <h2 className="text-base font-medium">{title}</h2>
       <div className="relative mt-4 flex-1 overflow-hidden rounded-sm bg-gradient-to-br from-accent via-muted to-accent blur-[1px]" aria-hidden />
       <div className="absolute inset-0 grid place-items-center">
-        <div className="card-surface px-10 py-5 text-center">
-          <p className="text-xl font-medium tracking-wide">COMING SOON</p>
-          <p className="text-danger">this feature is under development</p>
+        <div className="card-surface rounded-md border px-10 py-6 text-center shadow-card">
+          <p className="text-sm font-semibold tracking-[0.18em]">COMING SOON</p>
+          <p className="mt-1 text-sm text-danger">this feature is under development</p>
         </div>
       </div>
     </section>
@@ -82,11 +82,11 @@ export function OtaCard() {
     <section className="card-surface flex flex-col p-6">
       <h2 className="text-base font-medium">OTA guests reached</h2>
       <div className="mt-4 flex gap-2">
-        <span className="rounded-sm bg-info-soft px-2.5 py-1 text-xs font-semibold text-info">Expedia</span>
-        <span className="rounded-sm bg-info-soft px-2.5 py-1 text-xs font-semibold text-info">Booking.com</span>
+        <span className="rounded-full bg-info-soft px-2.5 py-1 text-xs font-semibold text-info">Expedia</span>
+        <span className="rounded-full bg-info-soft px-2.5 py-1 text-xs font-semibold text-info">Booking.com</span>
       </div>
-      <p className="mt-4 text-4xl font-medium">7</p>
-      <p className="text-muted-foreground">OTA guests reached</p>
+      <p className="mt-3 text-4xl font-medium tracking-tight tabular-nums">7</p>
+      <p className="text-sm text-muted-foreground">OTA guests reached</p>
       <a href="#" onClick={(e) => e.preventDefault()} className="mt-auto pt-4 text-sm text-primary hover:underline">See more on OTA outreach →</a>
     </section>
   );
@@ -96,8 +96,8 @@ export function DripCard({ value, label = "guests reached in total" }: { value: 
   return (
     <section className="card-surface p-6">
       <h2 className="text-base font-medium">Drip campaign results</h2>
-      <p className="mt-4 text-4xl font-medium">{value.toLocaleString()}</p>
-      <p className="text-muted-foreground">{label}</p>
+      <p className="mt-3 text-4xl font-medium tracking-tight tabular-nums">{value.toLocaleString()}</p>
+      <p className="text-sm text-muted-foreground">{label}</p>
     </section>
   );
 }
@@ -107,8 +107,8 @@ export function KpiStrip({ cells }: { cells: { label: string; value: number }[] 
     <section className="card-surface grid divide-y p-6 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
       {cells.map((c) => (
         <div key={c.label} className="py-3 sm:px-6 sm:py-0 sm:first:pl-0 sm:last:pr-0">
-          <p className="text-4xl font-medium tabular-nums">{c.value.toLocaleString()}</p>
-          <p className="mt-1 text-muted-foreground">{c.label}</p>
+          <p className="text-4xl font-medium tracking-tight tabular-nums">{c.value.toLocaleString()}</p>
+          <p className="mt-1 text-sm text-muted-foreground">{c.label}</p>
         </div>
       ))}
     </section>
@@ -132,7 +132,7 @@ export function ActivityChart({ title, data, defs, note }: { title: string; data
             const off = hidden.has(d.key as string);
             return (
               <button key={d.key as string} onClick={() => toggle(d.key as string)} aria-pressed={!off}
-                className={`flex items-center gap-1.5 rounded-sm px-1 text-sm hover:bg-muted ${off ? "opacity-40 line-through" : ""}`}>
+                className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-sm transition-colors hover:bg-muted ${off ? "opacity-40 line-through" : ""}`}>
                 <svg width="20" height="8" aria-hidden><line x1="0" y1="4" x2="20" y2="4" stroke={d.color} strokeWidth="2" strokeDasharray={d.dashed ? "4 3" : undefined} /><circle cx="10" cy="4" r="2.5" fill={d.color} /></svg>
                 <span style={{ color: d.color }}>{d.label}</span>
               </button>
@@ -143,14 +143,14 @@ export function ActivityChart({ title, data, defs, note }: { title: string; data
       <div className="mt-4 h-72">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ left: -10, right: 0, top: 8 }}>
-            <CartesianGrid vertical={false} stroke="var(--border)" />
+            <CartesianGrid vertical={false} stroke="var(--border)" strokeDasharray="3 3" />
             <XAxis dataKey="date" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
             <YAxis yAxisId="left" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} allowDecimals={false} />
             <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} allowDecimals={false} />
-            <Tooltip contentStyle={{ background: "var(--popover)", color: "var(--popover-foreground)", border: 0, borderRadius: 4, fontSize: 12 }} labelStyle={{ color: "var(--popover-foreground)" }} />
+            <Tooltip contentStyle={{ background: "var(--popover)", color: "var(--popover-foreground)", border: 0, borderRadius: 8, fontSize: 12, boxShadow: "0 8px 24px oklch(0.3 0.02 260 / 0.3)" }} labelStyle={{ color: "var(--popover-foreground)" }} />
             {defs.map((d) => (
               <Line key={d.key as string} yAxisId={d.axis} type="monotone" dataKey={d.key as string} name={d.label} stroke={d.color} strokeWidth={2}
-                strokeDasharray={d.dashed ? "5 4" : undefined} dot={false} hide={hidden.has(d.key as string)} />
+                strokeDasharray={d.dashed ? "5 4" : undefined} dot={false} activeDot={{ r: 4, strokeWidth: 0 }} hide={hidden.has(d.key as string)} />
             ))}
           </LineChart>
         </ResponsiveContainer>

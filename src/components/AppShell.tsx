@@ -40,7 +40,7 @@ export function AppShell({ crumb, active, children }: { crumb: string; active: "
     <div className="flex min-h-screen bg-background text-sm">
       <aside className="hidden w-[220px] shrink-0 border-r bg-shell lg:block">
         <div className="flex h-[60px] items-center gap-2 border-b px-4 font-medium">
-          <span className="grid size-5 place-items-center rounded-sm bg-foreground text-[10px] text-shell">D</span>
+          <span className="grid size-5 place-items-center rounded-md bg-foreground text-[10px] text-shell">D</span>
           <span className="truncate">Hellas Gadgets Kallithea</span>
           <ChevronDown className="ml-auto size-4 text-primary" />
         </div>
@@ -52,19 +52,19 @@ export function AppShell({ crumb, active, children }: { crumb: string; active: "
             {ANALYTICS_SUB.map((s) => (
               <li key={s}>
                 {s === "Outreach" ? (
-                  <Link to="/" search={{ channel: "both", range: 15, state: "healthy", remaining: false }} className={`block py-1.5 pl-4 ${active === "outreach" ? "text-primary" : "text-foreground hover:text-primary"}`}>{s}</Link>
+                  <Link to="/" search={{ channel: "both", range: 15, state: "healthy", remaining: false }} className={`block rounded-r-md py-1.5 pl-4 transition-colors ${active === "outreach" ? "bg-accent font-medium text-primary" : "text-foreground/80 hover:bg-muted/70 hover:text-primary"}`}>{s}</Link>
                 ) : (
-                  <span className="block cursor-default py-1.5 pl-4 text-foreground/80">{s}</span>
+                  <span className="block cursor-default rounded-r-md py-1.5 pl-4 text-foreground/70">{s}</span>
                 )}
               </li>
             ))}
           </ul>
-          <div className="flex items-center gap-3 px-5 py-1.5 text-foreground/80"><CalendarDays className="size-4 text-muted-foreground" /> Bookings</div>
+          <div className="mx-2 flex items-center gap-3 rounded-md px-3 py-1.5 text-foreground/80 transition-colors hover:bg-muted/70"><CalendarDays className="size-4 text-muted-foreground" /> Bookings</div>
           {SECTIONS.map((sec) => (
             <div key={sec.title} className="mt-2 border-t pt-3">
               <p className="px-5 pb-1 text-[11px] uppercase tracking-wide text-muted-foreground">{sec.title}</p>
               {sec.items.map((it) => (
-                <div key={it.label} className="flex items-center gap-3 px-5 py-1.5 text-foreground/80">
+                <div key={it.label} className="mx-2 flex items-center gap-3 rounded-md px-3 py-1.5 text-foreground/80 transition-colors hover:bg-muted/70 hover:text-foreground">
                   <it.icon className="size-4 text-muted-foreground" /> {it.label}
                 </div>
               ))}
@@ -72,7 +72,7 @@ export function AppShell({ crumb, active, children }: { crumb: string; active: "
           ))}
           <div className="mt-2 border-t pt-3">
             <p className="px-5 pb-1 text-[11px] uppercase tracking-wide text-muted-foreground">Internal · CSM / Admin</p>
-            <Link to="/diagnose" search={{ state: "healthy" }} className={`flex items-center gap-3 px-5 py-1.5 ${active === "diagnose" ? "text-primary" : "text-foreground/80 hover:text-primary"}`}>
+            <Link to="/diagnose" search={{ state: "healthy" }} className={`mx-2 flex items-center gap-3 rounded-md px-3 py-1.5 transition-colors ${active === "diagnose" ? "bg-accent font-medium text-primary" : "text-foreground/80 hover:bg-muted/70 hover:text-primary"}`}>
               <Stethoscope className="size-4" /> Diagnose
             </Link>
           </div>
@@ -82,7 +82,7 @@ export function AppShell({ crumb, active, children }: { crumb: string; active: "
         <header className="flex h-[60px] items-center border-b bg-shell px-6">
           <span className="text-lg text-primary">{active === "diagnose" ? "Internal" : "Analytics"}</span>
           <ChevronRight className="mx-2 size-4 text-muted-foreground" />
-          <span className="text-lg">{crumb}</span>
+          <span className="text-lg font-medium">{crumb}</span>
           <Info className="ml-auto size-5 text-primary" aria-label="Page information" />
         </header>
         <nav className="flex gap-4 border-b bg-shell px-6 py-3 lg:hidden" aria-label="Prototype pages">
