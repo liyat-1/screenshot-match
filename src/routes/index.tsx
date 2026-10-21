@@ -163,30 +163,43 @@ function EmailView({ data, range, rangeLabel, search, onOpenTips }: V & { rangeL
 
 function BothView({ data, range, search }: V & { search: Search }) {
   const scenario = EMAIL_SCENARIOS[search.state];
+  const hasPlan = scenario.hasPlan;
   const textSent = sum(data, "textMessages");
   const emailSent = sum(data, "emailMessages");
-  const reached = segments("text", range).reduce((a, s) => a + s.count, 0) + segments("email", range).reduce((a, s) => a + s.count, 0);
+  const textReached = segments("text", range).reduce((a, s) => a + s.count, 0);
+  const reached = textReached + segments("email", range).reduce((a, s) => a + s.count, 0);
   return (
     <div className="space-y-5">
       {search.state === "paused" && <PausedBanner />}
-      <KpiStrip cells={[
+      <KpiStrip cells={hasPlan ? [
         { label: "Text messages sent", value: textSent },
         { label: "Emails sent", value: emailSent },
         { label: "Guests reached (all channels)", value: reached },
+      ] : [
+        { label: "Text messages sent", value: textSent },
+        { label: "Emails sent", value: 0 },
+        { label: "Guests reached (all channels)", value: textReached },
       ]} />
       <Annotate>Unique guests across channels need engineering confirmation; if not possible, show "Messages sent (total)" instead.</Annotate>
       <div className="grid gap-5 xl:grid-cols-3">
         <div className="xl:col-span-2">
-          <ActivityChart title="Messages & clicks by channel" data={data} defs={[
+          <ActivityChart title="Messages & clicks by channel" data={data} defs={hasPlan ? [
             { key: "textMessages", label: "Text", color: "var(--series-text)", axis: "left" },
             { key: "emailMessages", label: "Email", color: "var(--series-email)", axis: "left" },
             { key: "textClicks", label: "Text clicks", color: "var(--series-text)", dashed: true, axis: "right" },
             { key: "emailClicks", label: "Email clicks", color: "var(--series-email)", dashed: true, axis: "right" },
+          ] : [
+            { key: "textMessages", label: "Text", color: "var(--series-text)", axis: "left" },
+            { key: "textClicks", label: "Text clicks", color: "var(--series-text)", dashed: true, axis: "right" },
           ]} />
         </div>
-        <CompactHealthCard state={search.state} scenario={scenario} search={search} />
+        {hasPlan ? <CompactHealthCard state={search.state} scenario={scenario} search={search} /> : <NoEmailPlan compact />}
       </div>
-      <SplitSegmentsCard title="Outreach by segments" data={segmentsSplit(range)} />
+      {hasPlan ? (
+        <SplitSegmentsCard title="Outreach by segments" data={segmentsSplit(range)} />
+      ) : (
+        <SegmentsCard title="Outreach by segments" data={segments("text", range)} />
+      )}
       <Annotate>No blended reputation. Email health is shown only for email.</Annotate>
       <div className="grid gap-5 xl:grid-cols-3">
         <DripCard value={1205} />
