@@ -16,7 +16,7 @@ export function SegmentsCard({ title, data, unit = "guests reached in total" }: 
         {data.map((s, i) => (
           <li key={s.name} className="flex items-center gap-4">
             <div className="flex-1">
-              <div className={`truncate rounded-full px-3 py-1.5 text-primary-foreground shadow-sm ${SEG_COLORS[i % 6]}`} style={{ width: `${Math.max(32, (s.count / max) * 100)}%` }} title={s.name}>{s.name}</div>
+              <div className={`truncate rounded-sm px-3 py-1.5 text-primary-foreground shadow-sm ${SEG_COLORS[i % 6]}`} style={{ width: `${Math.max(32, (s.count / max) * 100)}%` }} title={s.name}>{s.name}</div>
             </div>
             <span className="w-12 text-right text-sm tabular-nums">{s.count.toLocaleString()}</span>
           </li>
@@ -34,8 +34,8 @@ export function SplitSegmentsCard({ title, data }: { title: string; data: SplitS
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-base font-medium">{title}</h2>
         <div className="flex gap-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-chart-1" aria-hidden /> Text</span>
-          <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-series-email" aria-hidden /> Email</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-sm bg-chart-1" aria-hidden /> Text</span>
+          <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-sm bg-series-email" aria-hidden /> Email</span>
         </div>
       </div>
       <p className="mt-3 text-4xl font-medium tracking-tight tabular-nums">{total.toLocaleString()}</p>
@@ -51,7 +51,7 @@ export function SplitSegmentsCard({ title, data }: { title: string; data: SplitS
                 <span className="truncate text-sm">{s.name}</span>
                 <span className="text-xs tabular-nums text-muted-foreground">{s.text.toLocaleString()} · {s.email.toLocaleString()}</span>
               </div>
-              <div className="flex h-3.5 overflow-hidden rounded-full shadow-sm" style={{ width: `${w}%` }} title={`${s.name}: ${s.text} text · ${s.email} email`} role="img" aria-label={`${s.name}: ${s.text} text, ${s.email} email`}>
+              <div className="flex h-3.5 overflow-hidden rounded-sm shadow-sm" style={{ width: `${w}%` }} title={`${s.name}: ${s.text} text · ${s.email} email`} role="img" aria-label={`${s.name}: ${s.text} text, ${s.email} email`}>
                 <span className="bg-chart-1" style={{ width: `${textW}%` }} />
                 <span className="flex-1 bg-series-email" />
               </div>
@@ -83,8 +83,8 @@ export function OtaCard() {
     <section className="card-surface flex flex-col p-6">
       <h2 className="text-base font-medium">OTA guests reached</h2>
       <div className="mt-4 flex gap-2">
-        <span className="rounded-full bg-info-soft px-2.5 py-1 text-xs font-semibold text-info">Expedia</span>
-        <span className="rounded-full bg-info-soft px-2.5 py-1 text-xs font-semibold text-info">Booking.com</span>
+        <span className="rounded-sm bg-info-soft px-2.5 py-1 text-xs font-semibold text-info">Expedia</span>
+        <span className="rounded-sm bg-info-soft px-2.5 py-1 text-xs font-semibold text-info">Booking.com</span>
       </div>
       <p className="mt-3 text-4xl font-medium tracking-tight tabular-nums">7</p>
       <p className="text-sm text-muted-foreground">OTA guests reached</p>
@@ -148,7 +148,7 @@ export function ActivityChart({ title, data, defs, note }: { title: string; data
             <XAxis dataKey="date" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} />
             <YAxis yAxisId="left" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} allowDecimals={false} />
             <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} axisLine={false} tickLine={false} allowDecimals={false} />
-            <Tooltip contentStyle={{ background: "var(--popover)", color: "var(--popover-foreground)", border: 0, borderRadius: 8, fontSize: 12, boxShadow: "0 8px 24px oklch(0.3 0.02 260 / 0.3)" }} labelStyle={{ color: "var(--popover-foreground)" }} />
+            <Tooltip contentStyle={{ background: "var(--popover)", color: "var(--popover-foreground)", border: 0, borderRadius: 3, fontSize: 12, boxShadow: "0 8px 24px oklch(0.3 0.02 260 / 0.3)" }} labelStyle={{ color: "var(--popover-foreground)" }} />
             {defs.map((d) => (
               <Line key={d.key as string} yAxisId={d.axis} type="monotone" dataKey={d.key as string} name={d.label} stroke={d.color} strokeWidth={2}
                 strokeDasharray={d.dashed ? "5 4" : undefined} dot={false} activeDot={{ r: 4, strokeWidth: 0 }} hide={hidden.has(d.key as string)} />
