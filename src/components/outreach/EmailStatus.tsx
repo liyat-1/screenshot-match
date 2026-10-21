@@ -31,7 +31,7 @@ function pillFor(state: EmailState, scenario: EmailScenario): { tone: Tone; icon
 
 export function StatusPill({ tone, icon: Icon, label }: { tone: Tone; icon: typeof Info; label: string }) {
   return (
-    <span className={`inline-flex h-7 items-center gap-1.5 rounded-sm px-3 text-xs font-medium ${TONES[tone]}`}>
+    <span className={`inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-xs font-medium ring-1 ring-inset ring-current/15 ${TONES[tone]}`}>
       <Icon className="size-3.5" aria-hidden /> {label}
     </span>
   );
@@ -40,13 +40,13 @@ export function StatusPill({ tone, icon: Icon, label }: { tone: Tone; icon: type
 function ChangeChip({ previous, current }: { previous: number; current: number }) {
   if (current > previous) {
     return (
-      <span className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-medium ${TONES.success}`}>
+      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ring-current/15 ${TONES.success}`}>
         ↑ +{(current - previous).toLocaleString()} since yesterday
       </span>
     );
   }
   return (
-    <span className={`inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-medium ${TONES.warning}`}>
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ring-current/15 ${TONES.warning}`}>
       ↓ Reduced from {previous.toLocaleString()}
     </span>
   );
@@ -90,13 +90,13 @@ export function PausedBanner() {
   const [dismissed, setDismissed] = useState(false);
   if (dismissed) return null;
   return (
-    <div className="flex items-center gap-3 rounded-sm border border-danger/30 bg-danger-soft px-4 py-3 text-danger" role="alert">
+    <div className="flex items-center gap-3 rounded-md border border-danger/30 bg-danger-soft px-4 py-3 text-danger" role="alert">
       <PauseCircle className="size-5 shrink-0" aria-hidden />
       <p className="text-sm">
         Email sending is paused for {HOTEL_NAME}. Text messages are not affected.{" "}
         <a href="#sending-health" className="font-medium underline">View details</a>
       </p>
-      <button onClick={() => setDismissed(true)} aria-label="Dismiss banner" className="ml-auto rounded-sm p-1 hover:bg-danger/10">
+      <button onClick={() => setDismissed(true)} aria-label="Dismiss banner" className="ml-auto rounded-md p-1 transition-colors hover:bg-danger/10">
         <X className="size-4" />
       </button>
     </div>
@@ -125,7 +125,7 @@ export function TipsPanel({ open, onClose }: { open: boolean; onClose: () => voi
       <aside className="absolute right-0 top-0 flex h-full w-[min(400px,90vw)] flex-col bg-card shadow-xl">
         <div className="flex items-center justify-between border-b px-6 py-4">
           <h2 className="text-base font-medium">Tips for better email delivery</h2>
-          <button onClick={onClose} aria-label="Close tips panel" className="rounded-sm p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
+          <button onClick={onClose} aria-label="Close tips panel" className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
             <X className="size-5" />
           </button>
         </div>
@@ -141,7 +141,7 @@ export function TipsPanel({ open, onClose }: { open: boolean; onClose: () => voi
           ))}
         </ul>
         <div className="border-t px-6 py-4">
-          <button className="w-full rounded-sm border border-input px-4 py-2 text-sm font-medium hover:bg-accent">
+          <button className="w-full rounded-md border border-input px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-accent">
             Need help? Contact your account manager
           </button>
         </div>
@@ -190,13 +190,13 @@ export function SendingHealthCard({ state, scenario, onOpenTips }: { state: Emai
           <p className="mt-3 font-medium">{copy.headline}</p>
           {copy.support && <p className="mt-1 text-muted-foreground">{copy.support}</p>}
           {limited && (
-            <button onClick={onOpenTips} className="mt-3 rounded-sm border border-input px-3 py-1.5 text-sm font-medium hover:bg-accent">
+            <button onClick={onOpenTips} className="mt-3 rounded-md border border-input px-3 py-1.5 text-sm font-medium shadow-sm transition-colors hover:bg-accent">
               See how to improve delivery
             </button>
           )}
           {paused && (
             <div className="mt-3 flex flex-wrap items-center gap-3">
-              <button className="rounded-sm bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+              <button className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90">
                 Contact your account manager
               </button>
               <button onClick={onOpenTips} className="text-sm text-primary hover:underline">See how to improve delivery</button>
@@ -214,7 +214,7 @@ export function SendingHealthCard({ state, scenario, onOpenTips }: { state: Emai
           ) : (
             <>
               <p className="mt-2">
-                <span className="text-4xl font-medium tabular-nums">{scenario.dailyLimit.toLocaleString()}</span>{" "}
+                <span className="text-4xl font-medium tracking-tight tabular-nums">{scenario.dailyLimit.toLocaleString()}</span>{" "}
                 <span className="text-muted-foreground">/ day</span>
               </p>
               <div className="mt-4">
@@ -236,14 +236,14 @@ export function SendingHealthCard({ state, scenario, onOpenTips }: { state: Emai
           )}
         </div>
 
-        <div>
+        <div className="rounded-lg bg-muted/60 p-4">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">How your limit works</p>
           <ul className="mt-3 space-y-2.5 text-sm">
             <li className="flex items-center gap-2.5"><TrendingUp className="size-4 shrink-0 text-success" aria-hidden /> Grows as your emails are delivered well.</li>
             <li className="flex items-center gap-2.5"><TrendingDown className="size-4 shrink-0 text-warning" aria-hidden /> Shrinks if emails bounce or are marked as spam.</li>
             <li className="flex items-center gap-2.5"><Clock3 className="size-4 shrink-0 text-muted-foreground" aria-hidden /> Resets daily at midnight ({HOTEL_TZ}).</li>
           </ul>
-          <button onClick={onOpenTips} className="mt-3 text-sm text-primary hover:underline">Tips for better delivery →</button>
+          <button onClick={onOpenTips} className="mt-3 text-sm font-medium text-primary hover:underline">Tips for better delivery →</button>
         </div>
       </div>
     </section>
@@ -268,7 +268,7 @@ export function CompactHealthCard({ state, scenario, search }: { state: EmailSta
   const remaining = scenario.dailyLimit != null && scenario.sentToday != null ? remainingToday(scenario.dailyLimit, scenario.sentToday, scenario.raw) : null;
   const accent = paused ? "border-l-4 border-l-danger" : limited ? "border-l-4 border-l-warning" : "";
   return (
-    <section className={`card-surface p-5 ${accent}`}>
+    <section className={`card-surface p-6 ${accent}`}>
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-base font-medium">Email sending health</h2>
         <StatusPill tone={pill.tone} icon={pill.icon} label={pill.label} />
@@ -277,7 +277,7 @@ export function CompactHealthCard({ state, scenario, search }: { state: EmailSta
       <p className="mt-2 text-sm text-muted-foreground">
         {paused ? "Daily limit 0 · sending paused" : scenario.dailyLimit != null ? `Daily limit ${scenario.dailyLimit.toLocaleString()} · ${remaining?.toLocaleString()} left today` : "Daily limit unavailable"}
       </p>
-      <Link to="/" search={{ ...search, channel: "email" }} className="mt-3 inline-block text-sm text-primary hover:underline">
+      <Link to="/" search={{ ...search, channel: "email" }} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
         View email details →
       </Link>
     </section>

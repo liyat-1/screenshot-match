@@ -43,12 +43,12 @@ function ChannelSwitch({ channel, onSelect }: { channel: Channel; onSelect: (c: 
   };
   return (
     <div role="tablist" aria-label="Outreach channel" onKeyDown={onKey}
-      className="inline-flex h-9 items-center rounded-sm bg-muted p-0.5">
+      className="inline-flex h-10 items-center rounded-md bg-muted p-1 shadow-inner">
       {TABS.map((t) => {
         const selected = channel === t.id;
         return (
           <button key={t.id} role="tab" aria-selected={selected} onClick={() => onSelect(t.id)}
-            className={`flex h-8 min-w-24 items-center justify-center gap-1.5 rounded-sm px-3 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-ring ${
+            className={`flex h-8 min-w-24 items-center justify-center gap-1.5 rounded px-3 text-sm transition-all focus-visible:outline-2 focus-visible:outline-ring ${
               selected ? "bg-card font-medium text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"
             }`}>
             <t.icon className="size-4" aria-hidden /> {t.label}
@@ -86,7 +86,7 @@ function Outreach() {
           <Home className="mb-3 mr-3 size-5 text-muted-foreground" aria-hidden />
           {["Subscriptions", "Outreach", "OTA Outreach", "Reviews", "Conversions"].map((t) => (
             <span key={t} aria-current={t === "Outreach" ? "page" : undefined}
-              className={`px-4 pb-3 text-base ${t === "Outreach" ? "-mb-px border-b-2 border-primary font-medium text-foreground" : "text-muted-foreground"}`}>{t}</span>
+              className={`px-4 pb-3 text-base transition-colors ${t === "Outreach" ? "-mb-px border-b-2 border-primary font-medium text-foreground" : "text-muted-foreground hover:text-foreground"}`}>{t}</span>
           ))}
         </nav>
       </div>
@@ -97,7 +97,7 @@ function Outreach() {
         ) : (
           <Annotate>Text-only hotel: the channel switch is hidden entirely (decision 3).</Annotate>
         )}
-        <label className="flex items-center gap-2 rounded-sm border border-primary/40 bg-card px-3 py-2">
+        <label className="flex items-center gap-2 rounded-md border border-primary/40 bg-card px-3 py-2 shadow-sm transition-colors hover:border-primary/70">
           <CalendarDays className="size-4 text-muted-foreground" aria-hidden />
           <span className="sr-only">Date range</span>
           <select className="bg-transparent outline-none" value={search.range} onChange={(e) => setSearch({ range: Number(e.currentTarget.value) })}>
