@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clientLabel, remainingToday, steppedDownLimit, steppedUpLimit, usageTone } from "./outreach-data";
+import { EMAIL_SCENARIOS, WARMUP, clientLabel, remainingToday, steppedDownLimit, steppedUpLimit, usageTone } from "./outreach-data";
 
 describe("clientLabel (backend → client mapping)", () => {
   it("maps Paused to Paused", () => expect(clientLabel("Paused", true)).toBe("Paused"));
@@ -10,6 +10,14 @@ describe("clientLabel (backend → client mapping)", () => {
 });
 
 describe("remainingToday", () => {
+  it("keeps the previous health result and limit when too few emails were sent for evaluation", () => {
+    const scenario = EMAIL_SCENARIOS.too_few_sends;
+    expect(scenario.sentToday).toBe(24);
+    expect(scenario.sentToday).toBeLessThan(WARMUP.minSendsForEval);
+    expect(scenario.dailyLimit).toBe(1250);
+    expect(scenario.previousDailyLimit).toBe(1250);
+    expect(clientLabel(scenario.raw, scenario.evaluated)).toBe("Healthy");
+  });
   it("is limit minus sent today", () => expect(remainingToday(1000, 412, "Active")).toBe(588));
   it("is zero while paused", () => expect(remainingToday(250, 0, "Paused")).toBe(0));
   it("never goes negative", () => expect(remainingToday(250, 400, "Active")).toBe(0));

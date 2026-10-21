@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   clientCopy, clientLabel, remainingToday, usageTone, HOTEL_TZ, HOTEL_NAME,
   type Channel, type EmailScenario, type EmailState,
@@ -64,16 +65,37 @@ function UsageBar({ sent, limit }: { sent: number; limit: number }) {
   );
 }
 
+function InfoTrigger({ label }: { label: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" size="icon" aria-label={label} className="size-6 shrink-0 text-muted-foreground hover:text-primary">
+            <Info aria-hidden />
+          </Button>
+        </PopoverTrigger>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
+function HealthInfoPopover() {
+  return (
+    <Popover>
+      <InfoTrigger label="About email sending health" />
+      <PopoverContent className="w-80 max-w-[calc(100vw-2rem)] rounded-sm bg-card text-card-foreground" align="end">
+        <HowHealthWorks />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export function LimitInfoPopover() {
   return (
     <Popover>
-      <PopoverTrigger
-        className="rounded-sm text-muted-foreground hover:text-primary focus-visible:outline-2 focus-visible:outline-ring"
-        aria-label="About your daily email limit"
-      >
-        <Info className="size-4" />
-      </PopoverTrigger>
-      <PopoverContent className="w-80 text-sm" align="end">
+      <InfoTrigger label="About your daily email limit" />
+      <PopoverContent className="w-80 max-w-[calc(100vw-2rem)] rounded-sm bg-card text-sm text-card-foreground" align="end">
         <p className="font-medium">About your daily email limit</p>
         <p className="mt-2">To keep your emails out of spam folders, we control how many you can send each day.</p>
         <ul className="mt-2 list-disc space-y-1 pl-4">
@@ -157,9 +179,11 @@ function HowHealthWorks() {
     <div>
       <h3 className="text-sm font-medium">How email health works</h3>
       <ul className="mt-3 space-y-2.5 text-sm">
+        <li className="flex items-center gap-2.5"><Sparkles className="size-4 shrink-0 text-info" aria-hidden /> Getting started — waiting for your first delivery check.</li>
         <li className="flex items-center gap-2.5"><CheckCircle2 className="size-4 shrink-0 text-success" aria-hidden /> Healthy — your emails are being delivered well.</li>
         <li className="flex items-center gap-2.5"><AlertTriangle className="size-4 shrink-0 text-warning" aria-hidden /> Limited — bounces or spam reports lowered your limit.</li>
         <li className="flex items-center gap-2.5"><PauseCircle className="size-4 shrink-0 text-danger" aria-hidden /> Paused — sending stops until delivery recovers.</li>
+        <li className="flex items-center gap-2.5"><Clock3 className="size-4 shrink-0 text-muted-foreground" aria-hidden /> Too few sends — your last health result and limit stay unchanged until a new delivery check.</li>
       </ul>
       <p className="mt-3 border-t pt-3 text-xs text-muted-foreground">
         We check delivery every day, once you've sent at least 50 emails in a day.
@@ -188,7 +212,10 @@ function HowLimitWorks({ onOpenTips }: { onOpenTips: () => void }) {
 function CardSkeleton({ label }: { label: string }) {
   return (
     <section className="card-surface p-6" aria-label={label}>
-      <div className="h-5 w-44 animate-pulse rounded-sm bg-muted" />
+      <div className="flex items-center justify-between gap-3">
+        <div className="h-5 w-44 animate-pulse rounded-sm bg-muted" />
+        {label.startsWith("Daily") ? <LimitInfoPopover /> : <HealthInfoPopover />}
+      </div>
       <div className="mt-5">
         <div className="space-y-3">
           <div className="h-7 w-28 animate-pulse rounded-sm bg-muted" />
@@ -215,7 +242,10 @@ export function EmailHealthCard({ state, scenario, onOpenTips }: { state: EmailS
     <section id="sending-health" className={`card-surface min-w-0 scroll-mt-6 p-5 ${accent}`} aria-labelledby="health-h">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <h2 id="health-h" className="text-base font-medium">Email sending health</h2>
-        <span className="text-xs text-muted-foreground">Today · {HOTEL_TZ}</span>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">Today · {HOTEL_TZ}</span>
+          <HealthInfoPopover />
+        </div>
       </div>
       <div className="mt-4 text-sm">
         {unavailable ? (
@@ -230,6 +260,7 @@ export function EmailHealthCard({ state, scenario, onOpenTips }: { state: EmailS
         ) : (
           <div>
             <StatusPill tone={pill.tone} icon={pill.icon} label={pill.label} />
+            {state === "too_few_sends" && <span className="ml-2 inline-flex items-center gap-1 rounded-sm bg-muted px-2 py-1 text-xs text-muted-foreground"><Clock3 className="size-3.5" aria-hidden />Too few sends</span>}
             <p className="mt-3 font-medium">{copy.headline}</p>
             {copy.support && <p className="mt-1 text-muted-foreground">{copy.support}</p>}
             {limited && (
@@ -277,7 +308,10 @@ export function DailyLimitCard({ state, scenario, onOpenTips }: { state: EmailSt
     <section className="card-surface min-w-0 p-5" aria-labelledby="limit-h">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <h2 id="limit-h" className="text-base font-medium">Daily email limit</h2>
-        <span className="text-xs text-muted-foreground">Today · {HOTEL_TZ}</span>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">Today · {HOTEL_TZ}</span>
+          <LimitInfoPopover />
+        </div>
       </div>
       <div className="mt-4">
         {unavailable ? (
@@ -385,8 +419,9 @@ export function CompactHealthCard({ state, scenario, search }: { state: EmailSta
     <section className={`card-surface p-6 ${accent}`}>
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-base font-medium">Email sending health</h2>
-        <StatusPill tone={pill.tone} icon={pill.icon} label={pill.label} />
+        <HealthInfoPopover />
       </div>
+      <div className="mt-3"><StatusPill tone={pill.tone} icon={pill.icon} label={pill.label} /></div>
       <p className="mt-3 text-sm font-medium">{copy.headline}</p>
       <p className="mt-2 text-sm text-muted-foreground">
         {paused ? "Daily limit 0 · sending paused" : scenario.dailyLimit != null ? `Daily limit ${scenario.dailyLimit.toLocaleString()} · ${remaining?.toLocaleString()} left today` : "Daily limit unavailable"}

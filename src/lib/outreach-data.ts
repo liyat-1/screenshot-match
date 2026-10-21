@@ -5,6 +5,7 @@ export type Channel = "text" | "email" | "both";
 export type EmailState =
   | "getting_started"
   | "healthy"
+  | "too_few_sends"
   | "at_ceiling"
   | "limited"
   | "paused"
@@ -105,6 +106,12 @@ export const EMAIL_SCENARIOS: Record<EmailState, EmailScenario> = {
     consecutiveHealthy: 3, bounce: 0.012, spam: 0.0002, unsub: 0.004,
     lastEvaluatedOn: "2026-10-20T06:00:00", lastStepDownOn: null, pausedOn: null,
   },
+  too_few_sends: {
+    ...BASE, hasPlan: true, raw: "Active", evaluated: true,
+    dailyLimit: 1250, previousDailyLimit: 1250, sentToday: 24, monthlySent: 18444,
+    consecutiveHealthy: 3, bounce: 0.012, spam: 0.0002, unsub: 0.004,
+    lastEvaluatedOn: "2026-10-19T06:00:00", lastStepDownOn: null, pausedOn: null,
+  },
   at_ceiling: {
     ...BASE, hasPlan: true, raw: "Active", evaluated: true,
     dailyLimit: 6670, previousDailyLimit: 6420, sentToday: 3120, monthlySent: 96400,
@@ -159,6 +166,7 @@ export const EMAIL_STATE_LABELS: Record<EmailState, string> = {
   getting_started: "A · Getting started",
   healthy: "B1 · Healthy, growing",
   at_ceiling: "B2 · Healthy, at full limit",
+  too_few_sends: "B3 · Too few sends",
   limited: "C · Limited",
   paused: "D · Paused",
   limit_reached: "E · Today's limit reached",
@@ -180,6 +188,11 @@ export function clientCopy(state: EmailState): { headline: string; support: stri
       return {
         headline: "You're at your full daily email limit.",
         support: "Keep delivery healthy to keep this limit.",
+      };
+    case "too_few_sends":
+      return {
+        headline: "Too few sends to check delivery today.",
+        support: "You've sent fewer than 50 emails today. Your last health result and daily limit stay the same until there's enough sending activity for a new delivery check.",
       };
     case "limited":
       return {
@@ -219,6 +232,8 @@ export function whyThisLimit(state: EmailState, s: EmailScenario): string {
     case "healthy":
     case "limit_reached":
       return `Healthy for ${s.consecutiveHealthy} evaluations in a row. Next healthy evaluation raises the limit to ${(s.dailyLimit ?? 0) + 250}/day (ceiling ~6,670).`;
+    case "too_few_sends":
+      return `Too few sends for a new evaluation: ${sent24} sent, needs at least ${WARMUP.minSendsForEval} in 24h. Previous health result and daily limit (${s.dailyLimit?.toLocaleString() ?? "—"}/day) are unchanged.`;
     case "at_ceiling":
       return "At the maximum daily limit (~6,670/day).";
     case "limited":
