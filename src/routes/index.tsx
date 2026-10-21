@@ -3,7 +3,7 @@ import { CalendarDays, Home, Mail, MessageSquare, MessagesSquare } from "lucide-
 import { AppShell } from "@/components/AppShell";
 import { Annotate, SampleBanner } from "@/components/SampleBanner";
 import { ActivityChart, DripCard, KpiStrip, LocationCard, OtaCard, SegmentsCard, SplitSegmentsCard } from "@/components/outreach/Cards";
-import { CompactHealthCard, NoEmailPlan, PausedBanner, SendingHealthCard, TipsPanel } from "@/components/outreach/EmailStatus";
+import { CompactHealthCard, DailyLimitCard, EmailHealthCard, NoEmailPlan, PausedBanner, TipsPanel } from "@/components/outreach/EmailStatus";
 import { EMAIL_SCENARIOS, EMAIL_STATE_LABELS, RANGES, segments, segmentsSplit, series, sum, type Channel, type EmailState } from "@/lib/outreach-data";
 import { useState } from "react";
 
@@ -63,7 +63,7 @@ function Outreach() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/" });
   const scenario = EMAIL_SCENARIOS[search.state];
-  const channel: Channel = scenario.hasPlan ? search.channel : "text";
+  const channel: Channel = search.channel;
   const data = series(search.range);
   const [tipsOpen, setTipsOpen] = useState(false);
   const rangeLabel = RANGES.find((r) => r.value === search.range)?.label ?? "Last 15 days";
@@ -92,11 +92,7 @@ function Outreach() {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        {scenario.hasPlan ? (
-          <ChannelSwitch channel={channel} onSelect={(c) => setSearch({ channel: c })} />
-        ) : (
-          <Annotate>Text-only hotel: the channel switch is hidden entirely (decision 3).</Annotate>
-        )}
+        <ChannelSwitch channel={channel} onSelect={(c) => setSearch({ channel: c })} />
         <label className="flex items-center gap-2 rounded-md border border-primary/40 bg-card px-3 py-2 shadow-sm transition-colors hover:border-primary/70">
           <CalendarDays className="size-4 text-muted-foreground" aria-hidden />
           <span className="sr-only">Date range</span>
@@ -105,9 +101,7 @@ function Outreach() {
           </select>
         </label>
       </div>
-      {scenario.hasPlan && (
-        <div className="mt-2"><Annotate>Segmented control, not tabs, to avoid three levels of navigation. Options are shown per plan; the choice is kept in the URL (?channel=).</Annotate></div>
-      )}
+      <div className="mt-2"><Annotate>Segmented control, not tabs, to avoid three levels of navigation. The choice is kept in the URL (?channel=). Without an Email plan, the Email and Text + Email views show an empty state with a contact CTA.</Annotate></div>
 
       <div className="mt-5">
         {channel === "text" && <TextView data={data} range={search.range} />}
@@ -146,8 +140,9 @@ function EmailView({ data, range, rangeLabel, search, onOpenTips }: V & { rangeL
   return (
     <div className="space-y-5">
       {search.state === "paused" && <PausedBanner />}
-      <SendingHealthCard state={search.state} scenario={scenario} onOpenTips={onOpenTips} />
-      <Annotate>The health card is live (today) and ignores the date picker on purpose. Everything below follows the date range.</Annotate>
+      <EmailHealthCard state={search.state} scenario={scenario} onOpenTips={onOpenTips} />
+      <DailyLimitCard state={search.state} scenario={scenario} onOpenTips={onOpenTips} />
+      <Annotate>The health and limit cards are live (today) and ignore the date picker on purpose. Everything below follows the date range.</Annotate>
       <div className="border-t pt-4">
         <h2 className="text-sm font-medium text-muted-foreground">Email activity · {rangeLabel}</h2>
       </div>
@@ -168,30 +163,43 @@ function EmailView({ data, range, rangeLabel, search, onOpenTips }: V & { rangeL
 
 function BothView({ data, range, search }: V & { search: Search }) {
   const scenario = EMAIL_SCENARIOS[search.state];
+  const hasPlan = scenario.hasPlan;
   const textSent = sum(data, "textMessages");
   const emailSent = sum(data, "emailMessages");
-  const reached = segments("text", range).reduce((a, s) => a + s.count, 0) + segments("email", range).reduce((a, s) => a + s.count, 0);
+  const textReached = segments("text", range).reduce((a, s) => a + s.count, 0);
+  const reached = textReached + segments("email", range).reduce((a, s) => a + s.count, 0);
   return (
     <div className="space-y-5">
       {search.state === "paused" && <PausedBanner />}
-      <KpiStrip cells={[
+      <KpiStrip cells={hasPlan ? [
         { label: "Text messages sent", value: textSent },
         { label: "Emails sent", value: emailSent },
         { label: "Guests reached (all channels)", value: reached },
+      ] : [
+        { label: "Text messages sent", value: textSent },
+        { label: "Emails sent", value: 0 },
+        { label: "Guests reached (all channels)", value: textReached },
       ]} />
       <Annotate>Unique guests across channels need engineering confirmation; if not possible, show "Messages sent (total)" instead.</Annotate>
       <div className="grid gap-5 xl:grid-cols-3">
         <div className="xl:col-span-2">
-          <ActivityChart title="Messages & clicks by channel" data={data} defs={[
+          <ActivityChart title="Messages & clicks by channel" data={data} defs={hasPlan ? [
             { key: "textMessages", label: "Text", color: "var(--series-text)", axis: "left" },
             { key: "emailMessages", label: "Email", color: "var(--series-email)", axis: "left" },
             { key: "textClicks", label: "Text clicks", color: "var(--series-text)", dashed: true, axis: "right" },
             { key: "emailClicks", label: "Email clicks", color: "var(--series-email)", dashed: true, axis: "right" },
+          ] : [
+            { key: "textMessages", label: "Text", color: "var(--series-text)", axis: "left" },
+            { key: "textClicks", label: "Text clicks", color: "var(--series-text)", dashed: true, axis: "right" },
           ]} />
         </div>
-        <CompactHealthCard state={search.state} scenario={scenario} search={search} />
+        {hasPlan ? <CompactHealthCard state={search.state} scenario={scenario} search={search} /> : <NoEmailPlan compact />}
       </div>
-      <SplitSegmentsCard title="Outreach by segments" data={segmentsSplit(range)} />
+      {hasPlan ? (
+        <SplitSegmentsCard title="Outreach by segments" data={segmentsSplit(range)} />
+      ) : (
+        <SegmentsCard title="Outreach by segments" data={segments("text", range)} />
+      )}
       <Annotate>No blended reputation. Email health is shown only for email.</Annotate>
       <div className="grid gap-5 xl:grid-cols-3">
         <DripCard value={1205} />

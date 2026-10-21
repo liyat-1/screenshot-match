@@ -57,7 +57,7 @@ function Meter({ label, value, max, zones, verdict }: { label: string; value: nu
           <span className={`rounded-sm px-2 py-0.5 text-xs font-medium ${VERDICT_TONES[verdict as keyof typeof VERDICT_TONES]}`}>{verdict}</span>
         </span>
       </div>
-      <div className="mt-1.5 flex h-2 overflow-hidden rounded-full bg-muted" aria-hidden>
+      <div className="mt-1.5 flex h-2 overflow-hidden rounded-sm bg-muted" aria-hidden>
         {zones.map((z, i) => <div key={i} className={z.cls} style={{ width: `${(z.to / max) * 100}%` }} />)}
       </div>
       {value != null && <div className="relative h-0" aria-hidden><span className="absolute -top-[11px] h-3 w-0.5 bg-foreground" style={{ left: `calc(${pct}% - 1px)` }} /></div>}
@@ -70,8 +70,8 @@ function RampScale({ limit }: { limit: number }) {
   const ticks = [WARMUP.initialDailyLimit, 2500, 5000, WARMUP.approxMaxDaily];
   return (
     <div className="mt-1">
-      <div className="relative h-2 rounded-full bg-muted" aria-hidden>
-        <div className="absolute inset-y-0 left-0 rounded-full bg-info" style={{ width: `${pct}%` }} />
+      <div className="relative h-2 rounded-sm bg-muted" aria-hidden>
+        <div className="absolute inset-y-0 left-0 rounded-sm bg-info" style={{ width: `${pct}%` }} />
         <span className="absolute -top-1 h-4 w-1 rounded-sm bg-foreground" style={{ left: `calc(${pct}% - 2px)` }} />
       </div>
       <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
@@ -213,13 +213,13 @@ function Diagnose() {
             <Group title="Limits">
               <p className="text-3xl font-medium tabular-nums">{s.dailyLimit?.toLocaleString()}<span className="ml-1 text-sm font-normal text-muted-foreground">/ day</span></p>
               <RampScale limit={s.dailyLimit ?? 0} />
-              <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={s.sentToday ?? 0} aria-valuemax={s.dailyLimit ?? 1} aria-label="Emails sent today">
+              <div className="mt-4 h-1.5 overflow-hidden rounded-sm bg-muted" role="progressbar" aria-valuenow={s.sentToday ?? 0} aria-valuemax={s.dailyLimit ?? 1} aria-label="Emails sent today">
                 <div className={`h-full ${barFill}`} style={{ width: `${s.dailyLimit ? Math.min(100, ((s.sentToday ?? 0) / s.dailyLimit) * 100) : 100}%` }} />
               </div>
               <p className="mt-1.5 text-xs text-muted-foreground">{s.sentToday?.toLocaleString()} sent today · {remaining?.toLocaleString()} left</p>
               <div className="mt-4 border-t pt-3">
                 <p className="flex items-center justify-between text-xs text-muted-foreground"><span>Monthly limit</span><span>{monthlyPct?.toFixed(0)}%</span></p>
-                <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={s.monthlySent ?? 0} aria-valuemax={s.monthlyLimit} aria-label="Monthly email limit used">
+                <div className="mt-1 h-1.5 overflow-hidden rounded-sm bg-muted" role="progressbar" aria-valuenow={s.monthlySent ?? 0} aria-valuemax={s.monthlyLimit} aria-label="Monthly email limit used">
                   <div className={`h-full ${monthlyPct === 100 ? "bg-warning" : "bg-primary"}`} style={{ width: `${monthlyPct ?? 0}%` }} />
                 </div>
                 <p className="mt-1.5 text-xs text-muted-foreground">{s.monthlySent?.toLocaleString()} / {s.monthlyLimit.toLocaleString()} this month</p>
@@ -253,7 +253,7 @@ function Diagnose() {
                   <p className="text-xs text-muted-foreground">Pause lifts after 2 consecutive healthy evaluations</p>
                   <div className="mt-1.5 flex gap-1.5">
                     {[1, 2].map((i) => (
-                      <span key={i} className={`size-3.5 rounded-full ${i <= (s.consecutiveHealthy ?? 0) ? "bg-success" : "bg-muted ring-1 ring-border"}`} aria-label={`Healthy evaluation ${i} ${i <= (s.consecutiveHealthy ?? 0) ? "reached" : "not yet"}`} />
+                      <span key={i} className={`size-3.5 rounded-sm ${i <= (s.consecutiveHealthy ?? 0) ? "bg-success" : "bg-muted ring-1 ring-border"}`} aria-label={`Healthy evaluation ${i} ${i <= (s.consecutiveHealthy ?? 0) ? "reached" : "not yet"}`} />
                     ))}
                   </div>
                 </div>
