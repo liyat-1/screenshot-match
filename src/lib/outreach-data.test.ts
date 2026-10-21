@@ -1,12 +1,29 @@
 import { describe, expect, it } from "vitest";
-import { clientLabel, remainingToday, steppedDownLimit, steppedUpLimit } from "./outreach-data";
+import { clientLabel, remainingToday, steppedDownLimit, steppedUpLimit, usageTone } from "./outreach-data";
 
-describe("warmup rules", () => {
-  it("step-down halves the limit", () => expect(steppedDownLimit(2000)).toBe(1000));
+describe("clientLabel (backend → client mapping)", () => {
+  it("maps Paused to Paused", () => expect(clientLabel("Paused", true)).toBe("Paused"));
+  it("maps SteppedDown to Limited", () => expect(clientLabel("SteppedDown", true)).toBe("Limited"));
+  it("maps Active without a qualifying evaluation to Getting started", () => expect(clientLabel("Active", false)).toBe("Getting started"));
+  it("maps Active with an evaluation to Healthy", () => expect(clientLabel("Active", true)).toBe("Healthy"));
+  it("maps a missing status to null, never Healthy", () => expect(clientLabel(null, false)).toBeNull());
+});
+
+describe("remainingToday", () => {
+  it("is limit minus sent today", () => expect(remainingToday(1000, 412, "Active")).toBe(588));
+  it("is zero while paused", () => expect(remainingToday(250, 0, "Paused")).toBe(0));
+  it("never goes negative", () => expect(remainingToday(250, 400, "Active")).toBe(0));
+});
+
+describe("limit steps", () => {
+  it("step-down halves the limit", () => expect(steppedDownLimit(2500)).toBe(1250));
   it("step-down never goes below 250", () => expect(steppedDownLimit(400)).toBe(250));
-  it("healthy evaluation adds 250", () => expect(steppedUpLimit(500)).toBe(750));
-  it("stepped-down maps to At risk", () => expect(clientLabel("SteppedDown")).toBe("At risk"));
-  it("missing status is not Healthy", () => expect(clientLabel(null)).toBeNull());
-  it("remaining never negative", () => expect(remainingToday(250, 300, "Healthy")).toBe(0));
-  it("paused has zero remaining", () => expect(remainingToday(250, 0, "Paused")).toBe(0));
+  it("step-up adds 250", () => expect(steppedUpLimit(1000)).toBe(1250));
+  it("step-up stops at the ~6,670 ceiling", () => expect(steppedUpLimit(6500)).toBe(6670));
+});
+
+describe("usageTone", () => {
+  it("is blue under 80% used", () => expect(usageTone(79, 100)).toBe("blue"));
+  it("is amber from 80–99%", () => expect(usageTone(80, 100)).toBe("amber"));
+  it("is grey when the limit is reached", () => expect(usageTone(100, 100)).toBe("grey"));
 });
