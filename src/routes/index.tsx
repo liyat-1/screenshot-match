@@ -9,7 +9,7 @@ import { EMAIL_SCENARIOS, EMAIL_STATE_LABELS, RANGES, segments, series, sum, typ
 type Search = { channel: Channel; range: number; state: EmailState; remaining: boolean };
 
 export const Route = createFileRoute("/")({
-  validateSearch: (s: Record<string, unknown>): Search => ({
+  validateSearch: (s: Partial<Record<keyof Search, unknown>>): Search => ({
     channel: (["text", "email", "both"].includes(s.channel as string) ? s.channel : "text") as Channel,
     range: [7, 15, 30].includes(Number(s.range)) ? Number(s.range) : 15,
     state: ((s.state as string) in EMAIL_SCENARIOS ? s.state : "healthy") as EmailState,
