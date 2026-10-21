@@ -23,6 +23,14 @@ describe("App routing", () => {
     expect(validate({ channel, range: 30, state: "limited", remaining: true })).toEqual({ channel, range: 30, state: "limited", remaining: true });
   });
 
+  it("preserves the Too few sends state in both Outreach and Diagnose", () => {
+    for (const route of [OutreachRoute, DiagnoseRoute]) {
+      const validate = route.options.validateSearch;
+      if (typeof validate !== "function") throw new Error("Expected search validator");
+      expect(validate({ state: "too_few_sends" })).toMatchObject({ state: "too_few_sends" });
+    }
+  });
+
   it.each(["toString", "constructor", "__proto__", "invalid", "at_risk"])("rejects invalid Outreach state %s", (state) => {
     const validate = OutreachRoute.options.validateSearch;
     if (typeof validate !== "function") throw new Error("Expected Outreach search validator");
