@@ -31,7 +31,7 @@ const SCEN: Record<DState, { plan: boolean; warmup: Warmup | null; emailEligible
 };
 
 export const Route = createFileRoute("/diagnose")({
-  validateSearch: (s: { state?: unknown }): { state: DState } => ({ state: ((s.state as string) in SCEN ? s.state : "investigation") as DState }),
+  validateSearch: (s: { state?: unknown }): { state: DState } => ({ state: (typeof s.state === "string" && Object.hasOwn(SCEN, s.state) ? s.state : "investigation") as DState }),
   head: () => ({
     meta: [
       { title: "Diagnose — Email reputation & sending | Directful Internal" },

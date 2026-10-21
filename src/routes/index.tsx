@@ -12,7 +12,7 @@ export const Route = createFileRoute("/")({
   validateSearch: (s: Partial<Record<keyof Search, unknown>>): Search => ({
     channel: (["text", "email", "both"].includes(s.channel as string) ? s.channel : "text") as Channel,
     range: [7, 15, 30].includes(Number(s.range)) ? Number(s.range) : 15,
-    state: ((s.state as string) in EMAIL_SCENARIOS ? s.state : "healthy") as EmailState,
+    state: (typeof s.state === "string" && Object.hasOwn(EMAIL_SCENARIOS, s.state) ? s.state : "healthy") as EmailState,
     remaining: s.remaining === true || s.remaining === "true",
   }),
   head: () => ({
@@ -47,12 +47,18 @@ function Outreach() {
       <SampleBanner>
         <label className="flex items-center gap-2 text-sm">Email state
           <select className="rounded-sm border border-sample bg-card px-2 py-1 text-foreground" value={search.state}
-            onChange={(e) => navigate({ search: (p) => ({ ...p, state: e.target.value as EmailState }) })}>
+            onChange={(e) => {
+              const state = e.currentTarget.value as EmailState;
+              navigate({ search: (p) => ({ ...p, state }) });
+            }}>
             {Object.entries(EMAIL_STATE_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select>
         </label>
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={search.remaining} onChange={(e) => navigate({ search: (p) => ({ ...p, remaining: e.target.checked }) })} />
+          <input type="checkbox" checked={search.remaining} onChange={(e) => {
+            const remaining = e.currentTarget.checked;
+            navigate({ search: (p) => ({ ...p, remaining }) });
+          }} />
           Remaining-today variant
         </label>
       </SampleBanner>
@@ -68,7 +74,10 @@ function Outreach() {
         <label className="mb-2 flex items-center gap-2 rounded-sm border border-primary/40 bg-card px-3 py-2">
           <CalendarDays className="size-4 text-muted-foreground" aria-hidden />
           <span className="sr-only">Date range</span>
-          <select className="bg-transparent outline-none" value={search.range} onChange={(e) => navigate({ search: (p) => ({ ...p, range: Number(e.target.value) }) })}>
+          <select className="bg-transparent outline-none" value={search.range} onChange={(e) => {
+            const range = Number(e.currentTarget.value);
+            navigate({ search: (p) => ({ ...p, range }) });
+          }}>
             {RANGES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
           </select>
         </label>
