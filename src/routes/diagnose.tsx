@@ -147,5 +147,6 @@ function Diagnose() {
         </div>
       )}
     </AppShell>
+    </TooltipProvider>
   );
 }
