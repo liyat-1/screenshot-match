@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Info, AlertTriangle } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { SampleBanner } from "@/components/SampleBanner";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type DState = "investigation" | "no_plan" | "no_row" | "zero_eligible" | "missing_fields";
 const LABELS: Record<DState, string> = {
@@ -81,6 +81,7 @@ function Diagnose() {
   const s = SCEN[state];
   const w = s.warmup;
   return (
+    <TooltipProvider delayDuration={100}>
     <AppShell crumb="Diagnose · Hellas Gadgets Kallithea" active="diagnose">
       <SampleBanner>
         <label className="flex items-center gap-2 text-sm">Scenario
@@ -146,5 +147,6 @@ function Diagnose() {
         </div>
       )}
     </AppShell>
+    </TooltipProvider>
   );
 }

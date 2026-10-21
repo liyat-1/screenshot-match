@@ -52,7 +52,7 @@ export function AppShell({ crumb, active, children }: { crumb: string; active: "
             {ANALYTICS_SUB.map((s) => (
               <li key={s}>
                 {s === "Outreach" ? (
-                  <Link to="/" className={`block py-1.5 pl-4 ${active === "outreach" ? "text-primary" : "text-foreground hover:text-primary"}`}>{s}</Link>
+                  <Link to="/" search={{ channel: "text", range: 15, state: "healthy", remaining: false }} className={`block py-1.5 pl-4 ${active === "outreach" ? "text-primary" : "text-foreground hover:text-primary"}`}>{s}</Link>
                 ) : (
                   <span className="block cursor-default py-1.5 pl-4 text-foreground/80">{s}</span>
                 )}
@@ -72,7 +72,7 @@ export function AppShell({ crumb, active, children }: { crumb: string; active: "
           ))}
           <div className="mt-2 border-t pt-3">
             <p className="px-5 pb-1 text-[11px] uppercase tracking-wide text-muted-foreground">Internal · CSM / Admin</p>
-            <Link to="/diagnose" className={`flex items-center gap-3 px-5 py-1.5 ${active === "diagnose" ? "text-primary" : "text-foreground/80 hover:text-primary"}`}>
+            <Link to="/diagnose" search={{ state: "investigation" }} className={`flex items-center gap-3 px-5 py-1.5 ${active === "diagnose" ? "text-primary" : "text-foreground/80 hover:text-primary"}`}>
               <Stethoscope className="size-4" /> Diagnose
             </Link>
           </div>
