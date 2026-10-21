@@ -26,12 +26,12 @@ describe("App routing", () => {
   it.each(["toString", "constructor", "__proto__", "invalid"])("rejects invalid Outreach state %s", (state) => {
     const validate = OutreachRoute.options.validateSearch;
     if (typeof validate !== "function") throw new Error("Expected Outreach search validator");
-    expect(validate({ state }).state).toBe("healthy");
+    expect(validate({ state })).toMatchObject({ state: "healthy" });
   });
 
   it.each(["toString", "constructor", "__proto__", "invalid"])("rejects invalid Diagnose state %s", (state) => {
     const validate = DiagnoseRoute.options.validateSearch;
     if (typeof validate !== "function") throw new Error("Expected Diagnose search validator");
-    expect(validate({ state }).state).toBe("investigation");
+    expect(validate({ state })).toMatchObject({ state: "investigation" });
   });
 });
