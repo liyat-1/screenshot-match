@@ -128,7 +128,7 @@ function Diagnose() {
       <SampleBanner>
         <label className="flex items-center gap-2 text-sm">Warmup state
           <select className="rounded-sm border border-sample bg-card px-2 py-1 text-foreground" value={state}
-            onChange={(e) => { const next = e.currentTarget.value as EmailState; navigate(next); }}>
+            onChange={(e) => { const next = e.currentTarget.value as EmailState; navigate({ search: { state: next } }); }}>
             {Object.entries(EMAIL_STATE_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select>
         </label>
