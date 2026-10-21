@@ -17,21 +17,21 @@ describe("App routing", () => {
     expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
   });
 
-  it.each(["text", "email", "both"])("keeps the %s channel and sample review settings", (channel) => {
+  it.each(["text", "email", "both"])("keeps the %s channel and sending state", (channel) => {
     const validate = OutreachRoute.options.validateSearch;
     if (typeof validate !== "function") throw new Error("Expected Outreach search validator");
-    expect(validate({ channel, range: 30, state: "at_risk", remaining: true })).toEqual({ channel, range: 30, state: "at_risk", remaining: true });
+    expect(validate({ channel, range: 30, state: "limited", remaining: true })).toEqual({ channel, range: 30, state: "limited", remaining: true });
   });
 
-  it.each(["toString", "constructor", "__proto__", "invalid"])("rejects invalid Outreach state %s", (state) => {
+  it.each(["toString", "constructor", "__proto__", "invalid", "at_risk"])("rejects invalid Outreach state %s", (state) => {
     const validate = OutreachRoute.options.validateSearch;
     if (typeof validate !== "function") throw new Error("Expected Outreach search validator");
     expect(validate({ state })).toMatchObject({ state: "healthy" });
   });
 
-  it.each(["toString", "constructor", "__proto__", "invalid"])("rejects invalid Diagnose state %s", (state) => {
+  it.each(["toString", "constructor", "__proto__", "invalid", "investigation"])("rejects invalid Diagnose state %s", (state) => {
     const validate = DiagnoseRoute.options.validateSearch;
     if (typeof validate !== "function") throw new Error("Expected Diagnose search validator");
-    expect(validate({ state })).toMatchObject({ state: "investigation" });
+    expect(validate({ state })).toMatchObject({ state: "healthy" });
   });
 });
