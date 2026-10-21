@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { AlertTriangle, Check, Copy, History, Info, MessageSquare, Mail, TrendingUp } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { AlertTriangle, Check, Copy, History, Info } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Annotate, SampleBanner } from "@/components/SampleBanner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -114,6 +114,7 @@ function CopyExplanation({ state }: { state: EmailState }) {
 
 function Diagnose() {
   const { state } = Route.useSearch();
+  const navigate = useNavigate({ from: "/diagnose" });
   const s = EMAIL_SCENARIOS[state];
   const seen = clientLabel(s.raw, s.evaluated);
   const remaining = s.dailyLimit != null && s.sentToday != null ? remainingToday(s.dailyLimit, s.sentToday, s.raw) : null;
@@ -274,10 +275,3 @@ function Diagnose() {
     </AppShell>
   );
 }
-
-function navigate(next: EmailState) {
-  window.history.replaceState(null, "", `/diagnose?state=${next}`);
-}
-
-// Unused imports kept out of the bundle graph.
-void MessageSquare; void Mail; void TrendingUp;
