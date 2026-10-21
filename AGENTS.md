@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Provide tooltip context in the root component for every page; channel-specific views use shared tooltips and must not rely on another page's provider.
+- Use shared Radix popovers with design-system link buttons for email status explanations, keeping explanatory content out of the compact status layout.

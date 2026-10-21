@@ -140,8 +140,10 @@ function EmailView({ data, range, rangeLabel, search, onOpenTips }: V & { rangeL
   return (
     <div className="space-y-5">
       {search.state === "paused" && <PausedBanner />}
-      <EmailHealthCard state={search.state} scenario={scenario} onOpenTips={onOpenTips} />
-      <DailyLimitCard state={search.state} scenario={scenario} onOpenTips={onOpenTips} />
+      <div className="grid items-start gap-5 md:grid-cols-2">
+        <EmailHealthCard state={search.state} scenario={scenario} onOpenTips={onOpenTips} />
+        <DailyLimitCard state={search.state} scenario={scenario} onOpenTips={onOpenTips} />
+      </div>
       <Annotate>The health and limit cards are live (today) and ignore the date picker on purpose. Everything below follows the date range.</Annotate>
       <div className="border-t pt-4">
         <h2 className="text-sm font-medium text-muted-foreground">Email activity · {rangeLabel}</h2>

@@ -5,6 +5,7 @@ import {
   TrendingUp, TrendingDown, Clock3, UserCheck, ListChecks, MousePointerClick, CalendarClock,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import {
   clientCopy, clientLabel, remainingToday, usageTone, HOTEL_TZ, HOTEL_NAME,
   type Channel, type EmailScenario, type EmailState,
@@ -150,11 +151,11 @@ export function TipsPanel({ open, onClose }: { open: boolean; onClose: () => voi
   );
 }
 
-/** Side panel: what the health states mean. Sits next to the health status, inside the same card. */
+/** On-demand explanation, shared by the health card's help link. */
 function HowHealthWorks() {
   return (
-    <div className="rounded-sm bg-muted/60 p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">How email health works</p>
+    <div>
+      <h3 className="text-sm font-medium">How email health works</h3>
       <ul className="mt-3 space-y-2.5 text-sm">
         <li className="flex items-center gap-2.5"><CheckCircle2 className="size-4 shrink-0 text-success" aria-hidden /> Healthy — your emails are being delivered well.</li>
         <li className="flex items-center gap-2.5"><AlertTriangle className="size-4 shrink-0 text-warning" aria-hidden /> Limited — bounces or spam reports lowered your limit.</li>
@@ -167,17 +168,19 @@ function HowHealthWorks() {
   );
 }
 
-/** Side panel: how the daily limit behaves. Sits next to the limit numbers, inside the same card. */
+/** On-demand explanation, shared by the daily limit card's help link. */
 function HowLimitWorks({ onOpenTips }: { onOpenTips: () => void }) {
   return (
-    <div className="rounded-sm bg-muted/60 p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">How your limit works</p>
+    <div>
+      <h3 className="text-sm font-medium">How your limit works</h3>
+      <p className="mt-2 text-sm text-muted-foreground">Your daily limit protects your sending reputation and helps keep emails out of spam folders.</p>
       <ul className="mt-3 space-y-2.5 text-sm">
         <li className="flex items-center gap-2.5"><TrendingUp className="size-4 shrink-0 text-success" aria-hidden /> Grows as your emails are delivered well.</li>
         <li className="flex items-center gap-2.5"><TrendingDown className="size-4 shrink-0 text-warning" aria-hidden /> Shrinks if emails bounce or are marked as spam.</li>
         <li className="flex items-center gap-2.5"><Clock3 className="size-4 shrink-0 text-muted-foreground" aria-hidden /> Resets daily at midnight ({HOTEL_TZ}).</li>
       </ul>
-      <button onClick={onOpenTips} className="mt-3 text-sm font-medium text-primary hover:underline">Tips for better delivery →</button>
+      <p className="mt-3 border-t pt-3 text-xs text-muted-foreground">Your monthly plan allowance also applies. If it is reached, sending resumes when the next month begins, even if you have emails left in your daily limit.</p>
+      <Button onClick={onOpenTips} variant="link" className="mt-2 h-auto whitespace-normal p-0 text-left">Tips for better delivery →</Button>
     </div>
   );
 }
@@ -186,23 +189,18 @@ function CardSkeleton({ label }: { label: string }) {
   return (
     <section className="card-surface p-6" aria-label={label}>
       <div className="h-5 w-44 animate-pulse rounded-sm bg-muted" />
-      <div className="mt-6 grid gap-8 md:grid-cols-[3fr_2fr]">
+      <div className="mt-5">
         <div className="space-y-3">
           <div className="h-7 w-28 animate-pulse rounded-sm bg-muted" />
           <div className="h-4 w-full animate-pulse rounded-sm bg-muted" />
           <div className="h-4 w-3/4 animate-pulse rounded-sm bg-muted" />
-        </div>
-        <div className="space-y-3">
-          <div className="h-4 w-full animate-pulse rounded-sm bg-muted" />
-          <div className="h-4 w-full animate-pulse rounded-sm bg-muted" />
-          <div className="h-4 w-2/3 animate-pulse rounded-sm bg-muted" />
         </div>
       </div>
     </section>
   );
 }
 
-/** Card 1: email health status, with "How email health works" beside it. */
+/** Compact health status with its explanation available on demand. */
 export function EmailHealthCard({ state, scenario, onOpenTips }: { state: EmailState; scenario: EmailScenario; onOpenTips: () => void }) {
   if (state === "loading") return <CardSkeleton label="Email sending health loading" />;
 
@@ -214,12 +212,12 @@ export function EmailHealthCard({ state, scenario, onOpenTips }: { state: EmailS
   const accent = paused ? "border-l-4 border-l-danger" : limited ? "border-l-4 border-l-warning" : "";
 
   return (
-    <section id="sending-health" className={`card-surface scroll-mt-6 p-6 ${accent}`} aria-labelledby="health-h">
-      <div className="flex items-center gap-3">
+    <section id="sending-health" className={`card-surface min-w-0 scroll-mt-6 p-5 ${accent}`} aria-labelledby="health-h">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <h2 id="health-h" className="text-base font-medium">Email sending health</h2>
         <span className="text-xs text-muted-foreground">Today · {HOTEL_TZ}</span>
       </div>
-      <div className="mt-5 grid gap-8 md:grid-cols-[3fr_2fr]">
+      <div className="mt-4 text-sm">
         {unavailable ? (
           <div className="flex flex-col items-start gap-3 rounded-sm border border-dashed border-input p-5">
             <span className="grid size-10 place-items-center rounded-sm bg-muted text-muted-foreground"><HelpCircle className="size-5" aria-hidden /></span>
@@ -249,13 +247,22 @@ export function EmailHealthCard({ state, scenario, onOpenTips }: { state: EmailS
             )}
           </div>
         )}
-        <HowHealthWorks />
+      </div>
+      <div className="mt-4 border-t pt-3">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="link" className="h-auto whitespace-normal p-0 text-left"><HelpCircle aria-hidden />How email health works</Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" sideOffset={8} className="w-80 max-w-[calc(100vw-2rem)] rounded-sm bg-card text-card-foreground">
+            <HowHealthWorks />
+          </PopoverContent>
+        </Popover>
       </div>
     </section>
   );
 }
 
-/** Card 2: daily (and monthly) limit, with "How your limit works" beside it. */
+/** Compact daily and monthly usage with an on-demand explanation. */
 export function DailyLimitCard({ state, scenario, onOpenTips }: { state: EmailState; scenario: EmailScenario; onOpenTips: () => void }) {
   if (state === "loading") return <CardSkeleton label="Daily email limit loading" />;
 
@@ -267,13 +274,12 @@ export function DailyLimitCard({ state, scenario, onOpenTips }: { state: EmailSt
   const monthlyPct = scenario.monthlySent != null ? Math.min(100, (scenario.monthlySent / scenario.monthlyLimit) * 100) : null;
 
   return (
-    <section className="card-surface p-6" aria-labelledby="limit-h">
-      <div className="flex items-center gap-3">
+    <section className="card-surface min-w-0 p-5" aria-labelledby="limit-h">
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <h2 id="limit-h" className="text-base font-medium">Daily email limit</h2>
         <span className="text-xs text-muted-foreground">Today · {HOTEL_TZ}</span>
-        <span className="ml-auto"><LimitInfoPopover /></span>
       </div>
-      <div className="mt-5 grid gap-8 md:grid-cols-[3fr_2fr]">
+      <div className="mt-4">
         {unavailable ? (
           <div className="flex flex-col items-start gap-3 rounded-sm border border-dashed border-input p-5">
             <span className="grid size-10 place-items-center rounded-sm bg-muted text-muted-foreground"><Mail className="size-5" aria-hidden /></span>
@@ -332,7 +338,16 @@ export function DailyLimitCard({ state, scenario, onOpenTips }: { state: EmailSt
             )}
           </div>
         )}
-        <HowLimitWorks onOpenTips={onOpenTips} />
+      </div>
+      <div className="mt-4 border-t pt-3">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="link" className="h-auto whitespace-normal p-0 text-left"><HelpCircle aria-hidden />How your limit works</Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" sideOffset={8} className="w-80 max-w-[calc(100vw-2rem)] rounded-sm bg-card text-card-foreground">
+            <HowLimitWorks onOpenTips={onOpenTips} />
+          </PopoverContent>
+        </Popover>
       </div>
     </section>
   );
