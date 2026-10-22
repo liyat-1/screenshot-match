@@ -134,7 +134,16 @@ const TIPS = [
   { icon: CalendarClock, title: "Avoid sudden spikes.", body: "Spreading campaigns over days protects your limit." },
 ];
 
-export function TipsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+const TEXT_TIPS = [
+  { icon: UserCheck, title: "Text guests who opted in.", body: "Guests who expect your messages rarely reply STOP." },
+  { icon: ListChecks, title: "Keep phone numbers accurate.", body: "Wrong or landline numbers can't receive texts." },
+  { icon: MousePointerClick, title: "Keep messages short and clear.", body: "Avoid all caps, lots of links or spam-like wording." },
+  { icon: CalendarClock, title: "Send at sensible hours.", body: "Messages late at night lead to more opt-outs." },
+];
+
+export function TipsPanel({ open, onClose, channel = "email" }: { open: boolean; onClose: () => void; channel?: "email" | "text" }) {
+  const tips = channel === "text" ? TEXT_TIPS : TIPS;
+  const title = channel === "text" ? "Tips for better text delivery" : "Tips for better email delivery";
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -143,17 +152,17 @@ export function TipsPanel({ open, onClose }: { open: boolean; onClose: () => voi
   }, [open, onClose]);
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Tips for better email delivery">
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label={title}>
       <div className="absolute inset-0 bg-foreground/40" onClick={onClose} aria-hidden />
       <aside className="absolute right-0 top-0 flex h-full w-[min(400px,90vw)] flex-col bg-card shadow-xl">
         <div className="flex items-center justify-between border-b px-6 py-4">
-          <h2 className="text-base font-medium">Tips for better email delivery</h2>
+          <h2 className="text-base font-medium">{title}</h2>
           <button onClick={onClose} aria-label="Close tips panel" className="rounded-sm p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
             <X className="size-5" />
           </button>
         </div>
         <ul className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
-          {TIPS.map((t) => (
+          {tips.map((t) => (
             <li key={t.title} className="flex gap-3">
               <span className="grid size-9 shrink-0 place-items-center rounded-sm bg-info-soft text-info"><t.icon className="size-4.5" aria-hidden /></span>
               <div>
