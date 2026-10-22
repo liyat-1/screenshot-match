@@ -435,7 +435,7 @@ export function CompactHealthCard({ state, scenario, search }: { state: EmailSta
       <p className="mt-2 text-sm text-muted-foreground">
         {paused ? "Daily limit 0 · sending paused" : scenario.dailyLimit != null ? `Daily limit ${scenario.dailyLimit.toLocaleString()} · ${remaining?.toLocaleString()} left today` : "Daily limit unavailable"}
       </p>
-      <Link to="/" search={{ ...search, channel: "email" }} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+      <Link to="/" search={{ ...search, channel: "email" } as never} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
         View email details →
       </Link>
     </section>
