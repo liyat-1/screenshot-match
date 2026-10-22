@@ -6,8 +6,11 @@ import { ActivityChart, DripCard, KpiStrip, LocationCard, OtaCard, SegmentsCard,
 import { CompactHealthCard, DailyLimitCard, EmailHealthCard, NoEmailPlan, PausedBanner, TipsPanel } from "@/components/outreach/EmailStatus";
 import { EMAIL_SCENARIOS, EMAIL_STATE_LABELS, RANGES, segments, segmentsSplit, series, sum, type Channel, type EmailState } from "@/lib/outreach-data";
 import { useState } from "react";
+import { CompactTextHealthCard, TextBlockedBanner, TextDeliveryCard, TextHealthCard } from "@/components/outreach/TextStatus";
+import { TEXT_SCENARIOS, TEXT_STATE_LABELS, textLabel, type TextState } from "@/lib/text-data";
 
-type Search = { channel: Channel; range: number; state: EmailState; remaining: boolean };
+type Plan = "both" | "text_only";
+type Search = { channel: Channel; range: number; state: EmailState; remaining: boolean; text: TextState; plan: Plan };
 
 export const Route = createFileRoute("/")({
   validateSearch: (s: Partial<Record<keyof Search, unknown>>): Search => ({
@@ -15,6 +18,8 @@ export const Route = createFileRoute("/")({
     range: [7, 15, 30].includes(Number(s.range)) ? Number(s.range) : 15,
     state: (typeof s.state === "string" && Object.hasOwn(EMAIL_SCENARIOS, s.state) ? s.state : "healthy") as EmailState,
     remaining: s.remaining === true || s.remaining === "true",
+    text: (typeof s.text === "string" && Object.hasOwn(TEXT_SCENARIOS, s.text) && s.text !== "no_sms" ? s.text : "healthy") as TextState,
+    plan: s.plan === "text_only" ? "text_only" : "both",
   }),
   head: () => ({
     meta: [
@@ -63,7 +68,9 @@ function Outreach() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/" });
   const scenario = EMAIL_SCENARIOS[search.state];
-  const channel: Channel = search.channel;
+  const textOnly = search.plan === "text_only";
+  const channel: Channel = textOnly ? "text" : search.channel;
+  const [tipsChannel, setTipsChannel] = useState<"email" | "text">("email");
   const data = series(search.range);
   const [tipsOpen, setTipsOpen] = useState(false);
   const rangeLabel = RANGES.find((r) => r.value === search.range)?.label ?? "Last 15 days";
@@ -79,6 +86,19 @@ function Outreach() {
             {Object.entries(EMAIL_STATE_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select>
         </label>
+        <label className="flex items-center gap-2 text-sm">Text state
+          <select className="rounded-sm border border-sample bg-card px-2 py-1 text-foreground" value={search.text}
+            onChange={(e) => setSearch({ text: e.currentTarget.value as TextState })}>
+            {Object.entries(TEXT_STATE_LABELS).filter(([k]) => k !== "no_sms").map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-sm">Plan
+          <select className="rounded-sm border border-sample bg-card px-2 py-1 text-foreground" value={search.plan}
+            onChange={(e) => setSearch({ plan: e.currentTarget.value as Plan })}>
+            <option value="both">Text + Email</option>
+            <option value="text_only">Text only</option>
+          </select>
+        </label>
       </SampleBanner>
 
       <div className="flex flex-wrap items-end justify-between gap-4 border-b">
@@ -92,7 +112,7 @@ function Outreach() {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <ChannelSwitch channel={channel} onSelect={(c) => setSearch({ channel: c })} />
+        {textOnly ? <span /> : <ChannelSwitch channel={channel} onSelect={(c) => setSearch({ channel: c })} />}
         <label className="flex items-center gap-2 rounded-md border border-primary/40 bg-card px-3 py-2 shadow-sm transition-colors hover:border-primary/70">
           <CalendarDays className="size-4 text-muted-foreground" aria-hidden />
           <span className="sr-only">Date range</span>
@@ -101,25 +121,35 @@ function Outreach() {
           </select>
         </label>
       </div>
-      <div className="mt-2"><Annotate>Segmented control, not tabs, to avoid three levels of navigation. The choice is kept in the URL (?channel=). Without an Email plan, the Email and Text + Email views show an empty state with a contact CTA.</Annotate></div>
+      <div className="mt-2"><Annotate>Segmented control, not tabs, to avoid three levels of navigation. The choice is kept in the URL (?channel=). Without an Email plan, the Email and Text + Email views show an empty state with a contact CTA. A Text-only hotel sees no switch at all.</Annotate></div>
 
       <div className="mt-5">
-        {channel === "text" && <TextView data={data} range={search.range} />}
+        {channel === "text" && <TextView data={data} range={search.range} rangeLabel={rangeLabel} textState={search.text} onOpenTips={() => { setTipsChannel("text"); setTipsOpen(true); }} />}
         {channel === "email" && (scenario.hasPlan ? (
-          <EmailView data={data} range={search.range} rangeLabel={rangeLabel} search={search} onOpenTips={() => setTipsOpen(true)} />
+          <EmailView data={data} range={search.range} rangeLabel={rangeLabel} search={search} onOpenTips={() => { setTipsChannel("email"); setTipsOpen(true); }} />
         ) : <NoEmailPlan />)}
         {channel === "both" && <BothView data={data} range={search.range} search={search} />}
       </div>
 
-      <TipsPanel open={tipsOpen} onClose={() => setTipsOpen(false)} />
+      <TipsPanel open={tipsOpen} channel={tipsChannel} onClose={() => setTipsOpen(false)} />
     </AppShell>
   );
 }
 
 type V = { data: ReturnType<typeof series>; range: number };
 
-function TextView({ data, range }: V) {
+function TextView({ data, range, rangeLabel, textState, onOpenTips }: V & { rangeLabel: string; textState: TextState; onOpenTips: () => void }) {
   return (
+    <div className="space-y-5">
+      {textState === "blocked" && <TextBlockedBanner />}
+      <div className="grid items-start gap-5 md:grid-cols-2">
+        <TextHealthCard state={textState} onOpenTips={onOpenTips} />
+        <TextDeliveryCard state={textState} scenario={TEXT_SCENARIOS[textState]} onOpenTips={onOpenTips} />
+      </div>
+      <Annotate>Text health is a proposal beyond the ticket (#7). All text data is [DATA TBC]; window and thresholds are placeholders. Texts have no warmup and no daily limit.</Annotate>
+      <div className="border-t pt-4">
+        <h2 className="text-sm font-medium text-muted-foreground">Text activity · {rangeLabel}</h2>
+      </div>
     <div className="grid gap-5 xl:grid-cols-3">
       <div className="xl:col-span-2">
         <ActivityChart title="Text messages & clicks" data={data} defs={[
@@ -131,6 +161,8 @@ function TextView({ data, range }: V) {
       <OtaCard />
       <DripCard value={21} />
       <LocationCard title="Reached guests by location" />
+    </div>
+      <Annotate>Confirm with engineering which channel OTA outreach is sent on. If it is email, the card moves to the Email view as well.</Annotate>
     </div>
   );
 }
@@ -173,6 +205,7 @@ function BothView({ data, range, search }: V & { search: Search }) {
   return (
     <div className="space-y-5">
       {search.state === "paused" && <PausedBanner />}
+      {search.text === "blocked" && <TextBlockedBanner />}
       <KpiStrip cells={hasPlan ? [
         { label: "Text messages sent", value: textSent },
         { label: "Emails sent", value: emailSent },
@@ -195,14 +228,22 @@ function BothView({ data, range, search }: V & { search: Search }) {
             { key: "textClicks", label: "Text clicks", color: "var(--series-text)", dashed: true, axis: "right" },
           ]} />
         </div>
-        {hasPlan ? <CompactHealthCard state={search.state} scenario={scenario} search={search} /> : <NoEmailPlan compact />}
+        <div className="space-y-5">
+          {(() => {
+            const textCard = <CompactTextHealthCard key="t" state={search.text} scenario={TEXT_SCENARIOS[search.text]} search={search} />;
+            const emailCard = hasPlan ? <CompactHealthCard key="e" state={search.state} scenario={scenario} search={search} /> : <NoEmailPlan key="e" compact />;
+            const emailUnhealthy = hasPlan && (scenario.raw === "Paused" || scenario.raw === "SteppedDown" || search.state === "unavailable");
+            const textUnhealthy = ["Needs attention", "Blocked", "Unavailable"].includes(textLabel(search.text) ?? "");
+            return emailUnhealthy && !textUnhealthy ? [emailCard, textCard] : [textCard, emailCard];
+          })()}
+        </div>
       </div>
       {hasPlan ? (
         <SplitSegmentsCard title="Outreach by segments" data={segmentsSplit(range)} />
       ) : (
         <SegmentsCard title="Outreach by segments" data={segments("text", range)} />
       )}
-      <Annotate>No blended reputation. Email health is shown only for email.</Annotate>
+      <Annotate>No blended reputation. Each channel keeps its own health card; an unhealthy channel moves to the top.</Annotate>
       <div className="grid gap-5 xl:grid-cols-3">
         <DripCard value={1205} />
         <div className="xl:col-span-2"><LocationCard title="Reached guests by location" /></div>
