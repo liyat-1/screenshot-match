@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { AlertTriangle, Check, Copy, History, Info } from "lucide-react";
+import { AlertTriangle, Check, Copy, History, Info, X } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Annotate, SampleBanner } from "@/components/SampleBanner";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import {
   EMAIL_SCENARIOS, EMAIL_STATE_LABELS, WARMUP, clientCopy, clientLabel, fmtDate,
   remainingToday, usageTone, whyThisLimit, HOTEL_NAME, type EmailScenario, type EmailState,
@@ -97,6 +98,39 @@ function ChannelTag({ children }: { children: React.ReactNode }) {
   return <span className="rounded-sm bg-info-soft px-2 py-0.5 text-[11px] font-medium text-info">{children}</span>;
 }
 
+function PinnedInfo({ label, children }: { label: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon" aria-label={label} className="size-5 shrink-0 p-0 text-muted-foreground hover:text-primary">
+          <Info className="size-3.5" aria-hidden />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-72 max-w-[calc(100vw-2rem)] rounded-sm bg-card text-card-foreground"
+        align="start"
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+            <p className="mt-1 text-sm">{children}</p>
+          </div>
+          <button
+            onClick={() => setOpen(false)}
+            aria-label="Close"
+            className="shrink-0 rounded-sm p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
+            <X className="size-4" aria-hidden />
+          </button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function CopyExplanation({ state }: { state: EmailState }) {
   const [copied, setCopied] = useState(false);
   const copy = clientCopy(state);
@@ -155,12 +189,10 @@ function Diagnose() {
           <ChannelTag>Email</ChannelTag>
           <p className="mt-2 flex items-center gap-1 text-muted-foreground">
             Eligible for email
-            <Tooltip>
-              <TooltipTrigger aria-label="Eligibility breakdown" className="text-muted-foreground hover:text-primary"><Info className="size-3.5" /></TooltipTrigger>
-              <TooltipContent className="max-w-56">
-                With email address {s.emailWithAddress.toLocaleString()} · not unsubscribed {s.emailUnsubscribed.toLocaleString()} · not suppressed {s.emailSuppressed.toLocaleString()}
-              </TooltipContent>
-            </Tooltip>
+            <PinnedInfo label="Eligibility breakdown">
+              With email address {s.emailWithAddress.toLocaleString()} · not unsubscribed{" "}
+              {s.emailUnsubscribed.toLocaleString()} · not suppressed {s.emailSuppressed.toLocaleString()}
+            </PinnedInfo>
           </p>
           {s.hasPlan ? (
             <>
