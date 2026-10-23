@@ -8,10 +8,12 @@ import {
   EMAIL_SCENARIOS, EMAIL_STATE_LABELS, WARMUP, clientCopy, clientLabel, fmtDate,
   remainingToday, usageTone, whyThisLimit, HOTEL_NAME, type EmailScenario, type EmailState,
 } from "@/lib/outreach-data";
+import { TEXT_SCENARIOS, TEXT_STATE_LABELS, TEXT_TBD, deliveryRate, optOutRate, textLabel, whyThisTextStatus, type TextState } from "@/lib/text-data";
 
 export const Route = createFileRoute("/diagnose")({
-  validateSearch: (s: { state?: unknown }) => ({
+  validateSearch: (s: { state?: unknown; text?: unknown }) => ({
     state: (typeof s.state === "string" && Object.hasOwn(EMAIL_SCENARIOS, s.state) ? s.state : "healthy") as EmailState,
+    text: (typeof s.text === "string" && Object.hasOwn(TEXT_SCENARIOS, s.text) ? s.text : "healthy") as TextState,
   }),
   head: () => ({
     meta: [
@@ -113,7 +115,7 @@ function CopyExplanation({ state }: { state: EmailState }) {
 }
 
 function Diagnose() {
-  const { state } = Route.useSearch();
+  const { state, text } = Route.useSearch();
   const navigate = useNavigate({ from: "/diagnose" });
   const s = EMAIL_SCENARIOS[state];
   const seen = clientLabel(s.raw, s.evaluated);
@@ -128,8 +130,14 @@ function Diagnose() {
       <SampleBanner>
         <label className="flex items-center gap-2 text-sm">Warmup state
           <select className="rounded-sm border border-sample bg-card px-2 py-1 text-foreground" value={state}
-            onChange={(e) => { const next = e.currentTarget.value as EmailState; navigate({ search: { state: next } }); }}>
+            onChange={(e) => { const next = e.currentTarget.value as EmailState; navigate({ search: (p) => ({ ...p, state: next }) }); }}>
             {Object.entries(EMAIL_STATE_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-sm">Text state
+          <select className="rounded-sm border border-sample bg-card px-2 py-1 text-foreground" value={text}
+            onChange={(e) => { const next = e.currentTarget.value as TextState; navigate({ search: (p) => ({ ...p, text: next }) }); }}>
+            {Object.entries(TEXT_STATE_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select>
         </label>
       </SampleBanner>
@@ -272,6 +280,56 @@ function Diagnose() {
           </p>
         </div>
       )}
+      <TextDiagnostics state={text} />
     </AppShell>
+  );
+}
+
+function TextDiagnostics({ state }: { state: TextState }) {
+  const t = TEXT_SCENARIOS[state];
+  const dr = deliveryRate(t);
+  const or = optOutRate(t);
+  const pct = (v: number | null, d: number) => (v == null ? "—" : `${(v * 100).toFixed(d)}%`);
+  const rows: [string, string][] = [
+    ["Client sees", textLabel(state) ?? "—"],
+    ["Sender number", `${t.senderNumber} · ${t.senderStatus}`],
+    [`Sent (last ${TEXT_TBD.windowDays} days)`, t.sent?.toLocaleString() ?? "—"],
+    ["Delivered", `${t.delivered?.toLocaleString() ?? "—"} · ${pct(dr, 1)} (threshold ${TEXT_TBD.deliveryRate * 100}% {TBD})`],
+    ["Opt-outs", `${t.optOuts ?? "—"} · ${pct(or, 2)} (threshold ${TEXT_TBD.optOutRate * 100}% {TBD})`],
+    ["Not eligible", `${t.eligibleOptedOut} opted out · ${t.eligibleInvalid} invalid numbers`],
+    ["Last sent", fmtDate(t.lastSent)],
+    ["Last failure", fmtDate(t.lastFailure)],
+    ["Last status change", t.lastStatusChange ? `${fmtDate(t.lastStatusChange)}${t.statusChange ? ` · ${t.statusChange}` : ""}` : "—"],
+  ];
+  return (
+    <section className="mt-8 border-t pt-6">
+      <h2 className="text-base font-medium">Text sending</h2>
+      <div className="mt-3 grid gap-4 md:grid-cols-2">
+        <div className="card-surface p-5">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Why this status</h3>
+          <p className="mt-2 text-sm">{t.hasSms ? whyThisTextStatus(state, t) : "This hotel has no text (SMS) plan."}</p>
+          <dl className="mt-4 space-y-2 text-sm">
+            {rows.map(([k, v]) => (
+              <div key={k} className="flex justify-between gap-3 border-b pb-2 last:border-0">
+                <dt className="text-muted-foreground">{k}</dt><dd className="text-right tabular-nums">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <div className="card-surface p-5">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Failures by reason</h3>
+          {t.failures.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">No failed texts in this window.</p>
+          ) : (
+            <ul className="mt-3 space-y-2 text-sm">
+              {[...t.failures].sort((a, b) => b.count - a.count).map((f) => (
+                <li key={f.reason} className="flex justify-between gap-3"><span>{f.reason}</span><span className="tabular-nums">{f.count}</span></li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+      <Annotate>Text health is a proposal (#7). All text values and thresholds are [DATA TBC]. Texts have no warmup and no daily limit.</Annotate>
+    </section>
   );
 }
