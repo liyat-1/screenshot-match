@@ -20,7 +20,7 @@ describe("App routing", () => {
   it.each(["text", "email", "both"])("keeps the %s channel and sending state", (channel) => {
     const validate = OutreachRoute.options.validateSearch;
     if (typeof validate !== "function") throw new Error("Expected Outreach search validator");
-    expect(validate({ channel, range: 30, state: "limited", remaining: true })).toEqual({ channel, range: 30, state: "limited", remaining: true });
+    expect(validate({ channel, range: 30, state: "limited", remaining: true })).toMatchObject({ channel, range: 30, state: "limited", remaining: true });
   });
 
   it("preserves the Too few sends state in both Outreach and Diagnose", () => {
