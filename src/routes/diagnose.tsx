@@ -280,6 +280,56 @@ function Diagnose() {
           </p>
         </div>
       )}
+      <TextDiagnostics state={text} />
     </AppShell>
+  );
+}
+
+function TextDiagnostics({ state }: { state: TextState }) {
+  const t = TEXT_SCENARIOS[state];
+  const dr = deliveryRate(t);
+  const or = optOutRate(t);
+  const pct = (v: number | null, d: number) => (v == null ? "—" : `${(v * 100).toFixed(d)}%`);
+  const rows: [string, string][] = [
+    ["Client sees", textLabel(state) ?? "—"],
+    ["Sender number", `${t.senderNumber} · ${t.senderStatus}`],
+    [`Sent (last ${TEXT_TBD.windowDays} days)`, t.sent?.toLocaleString() ?? "—"],
+    ["Delivered", `${t.delivered?.toLocaleString() ?? "—"} · ${pct(dr, 1)} (threshold ${TEXT_TBD.deliveryRate * 100}% {TBD})`],
+    ["Opt-outs", `${t.optOuts ?? "—"} · ${pct(or, 2)} (threshold ${TEXT_TBD.optOutRate * 100}% {TBD})`],
+    ["Not eligible", `${t.eligibleOptedOut} opted out · ${t.eligibleInvalid} invalid numbers`],
+    ["Last sent", t.lastSent ?? "—"],
+    ["Last failure", t.lastFailure ?? "—"],
+    ["Last status change", t.lastStatusChange ? `${t.lastStatusChange}${t.statusChange ? ` · ${t.statusChange}` : ""}` : "—"],
+  ];
+  return (
+    <section className="mt-8 border-t pt-6">
+      <h2 className="text-base font-medium">Text sending</h2>
+      <div className="mt-3 grid gap-4 md:grid-cols-2">
+        <div className="card-surface p-5">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Why this status</h3>
+          <p className="mt-2 text-sm">{t.hasSms ? whyThisTextStatus(state, t) : "This hotel has no text (SMS) plan."}</p>
+          <dl className="mt-4 space-y-2 text-sm">
+            {rows.map(([k, v]) => (
+              <div key={k} className="flex justify-between gap-3 border-b pb-2 last:border-0">
+                <dt className="text-muted-foreground">{k}</dt><dd className="text-right tabular-nums">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+        <div className="card-surface p-5">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Failures by reason</h3>
+          {t.failures.length === 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">No failed texts in this window.</p>
+          ) : (
+            <ul className="mt-3 space-y-2 text-sm">
+              {[...t.failures].sort((a, b) => b.count - a.count).map((f) => (
+                <li key={f.reason} className="flex justify-between gap-3"><span>{f.reason}</span><span className="tabular-nums">{f.count}</span></li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+      <Annotate>Text health is a proposal (#7). All text values and thresholds are [DATA TBC]. Texts have no warmup and no daily limit.</Annotate>
+    </section>
   );
 }
