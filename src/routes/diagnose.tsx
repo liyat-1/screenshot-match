@@ -297,9 +297,9 @@ function TextDiagnostics({ state }: { state: TextState }) {
     ["Delivered", `${t.delivered?.toLocaleString() ?? "—"} · ${pct(dr, 1)} (threshold ${TEXT_TBD.deliveryRate * 100}% {TBD})`],
     ["Opt-outs", `${t.optOuts ?? "—"} · ${pct(or, 2)} (threshold ${TEXT_TBD.optOutRate * 100}% {TBD})`],
     ["Not eligible", `${t.eligibleOptedOut} opted out · ${t.eligibleInvalid} invalid numbers`],
-    ["Last sent", t.lastSent ?? "—"],
-    ["Last failure", t.lastFailure ?? "—"],
-    ["Last status change", t.lastStatusChange ? `${t.lastStatusChange}${t.statusChange ? ` · ${t.statusChange}` : ""}` : "—"],
+    ["Last sent", fmtDate(t.lastSent)],
+    ["Last failure", fmtDate(t.lastFailure)],
+    ["Last status change", t.lastStatusChange ? `${fmtDate(t.lastStatusChange)}${t.statusChange ? ` · ${t.statusChange}` : ""}` : "—"],
   ];
   return (
     <section className="mt-8 border-t pt-6">
