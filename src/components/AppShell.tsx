@@ -72,7 +72,7 @@ export function AppShell({ crumb, active, children }: { crumb: string; active: "
           ))}
           <div className="mt-2 border-t pt-3">
             <p className="px-5 pb-1 text-[11px] uppercase tracking-wide text-muted-foreground">Internal · CSM / Admin</p>
-            <Link to="/diagnose" search={{ state: "healthy" }} className={`mx-2 flex items-center gap-3 rounded-md px-3 py-1.5 transition-colors ${active === "diagnose" ? "bg-accent font-medium text-primary" : "text-foreground/80 hover:bg-muted/70 hover:text-primary"}`}>
+            <Link to="/diagnose" search={{ state: "healthy", text: "healthy" }} className={`mx-2 flex items-center gap-3 rounded-md px-3 py-1.5 transition-colors ${active === "diagnose" ? "bg-accent font-medium text-primary" : "text-foreground/80 hover:bg-muted/70 hover:text-primary"}`}>
               <Stethoscope className="size-4" /> Diagnose
             </Link>
           </div>
@@ -87,7 +87,7 @@ export function AppShell({ crumb, active, children }: { crumb: string; active: "
         </header>
         <nav className="flex gap-4 border-b bg-shell px-6 py-3 lg:hidden" aria-label="Prototype pages">
           <Link to="/" search={{ channel: "both", range: 15, state: "healthy", remaining: false, text: "healthy" as const, plan: "both" as const }} aria-current={active === "outreach" ? "page" : undefined} className={active === "outreach" ? "font-medium text-primary" : "text-muted-foreground"}>Outreach</Link>
-          <Link to="/diagnose" search={{ state: "healthy" }} aria-current={active === "diagnose" ? "page" : undefined} className={active === "diagnose" ? "font-medium text-primary" : "text-muted-foreground"}>Diagnose</Link>
+          <Link to="/diagnose" search={{ state: "healthy", text: "healthy" }} aria-current={active === "diagnose" ? "page" : undefined} className={active === "diagnose" ? "font-medium text-primary" : "text-muted-foreground"}>Diagnose</Link>
         </nav>
         <main className="flex-1 px-6 py-6">{children}</main>
       </div>
