@@ -8,10 +8,12 @@ import {
   EMAIL_SCENARIOS, EMAIL_STATE_LABELS, WARMUP, clientCopy, clientLabel, fmtDate,
   remainingToday, usageTone, whyThisLimit, HOTEL_NAME, type EmailScenario, type EmailState,
 } from "@/lib/outreach-data";
+import { TEXT_SCENARIOS, TEXT_STATE_LABELS, TEXT_TBD, deliveryRate, optOutRate, textLabel, whyThisTextStatus, type TextState } from "@/lib/text-data";
 
 export const Route = createFileRoute("/diagnose")({
-  validateSearch: (s: { state?: unknown }) => ({
+  validateSearch: (s: { state?: unknown; text?: unknown }) => ({
     state: (typeof s.state === "string" && Object.hasOwn(EMAIL_SCENARIOS, s.state) ? s.state : "healthy") as EmailState,
+    text: (typeof s.text === "string" && Object.hasOwn(TEXT_SCENARIOS, s.text) ? s.text : "healthy") as TextState,
   }),
   head: () => ({
     meta: [
@@ -113,7 +115,7 @@ function CopyExplanation({ state }: { state: EmailState }) {
 }
 
 function Diagnose() {
-  const { state } = Route.useSearch();
+  const { state, text } = Route.useSearch();
   const navigate = useNavigate({ from: "/diagnose" });
   const s = EMAIL_SCENARIOS[state];
   const seen = clientLabel(s.raw, s.evaluated);
@@ -128,8 +130,14 @@ function Diagnose() {
       <SampleBanner>
         <label className="flex items-center gap-2 text-sm">Warmup state
           <select className="rounded-sm border border-sample bg-card px-2 py-1 text-foreground" value={state}
-            onChange={(e) => { const next = e.currentTarget.value as EmailState; navigate({ search: { state: next } }); }}>
+            onChange={(e) => { const next = e.currentTarget.value as EmailState; navigate({ search: (p) => ({ ...p, state: next }) }); }}>
             {Object.entries(EMAIL_STATE_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-sm">Text state
+          <select className="rounded-sm border border-sample bg-card px-2 py-1 text-foreground" value={text}
+            onChange={(e) => { const next = e.currentTarget.value as TextState; navigate({ search: (p) => ({ ...p, text: next }) }); }}>
+            {Object.entries(TEXT_STATE_LABELS).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
           </select>
         </label>
       </SampleBanner>
